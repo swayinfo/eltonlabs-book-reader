@@ -4,6 +4,9 @@
 
 **Read EPUB, FB2 and PDF books directly inside [Obsidian](https://obsidian.md)** — a beautiful, distraction-free book reader with text highlighting, notes, and reading progress that syncs into your vault. Works on both desktop and mobile (Windows, macOS, Linux, Android, iOS).
 
+https://github.com/user-attachments/assets/a207e646-720b-4dc9-9ca7-16397490e8e6
+
+
 > A lightweight Obsidian reading plugin: open a book, highlight what matters, turn highlights into linked notes — without ever leaving your knowledge base.
 
 ![Reading a book inside Obsidian — two-column paged view with a reading timer](https://raw.githubusercontent.com/swayinfo/eltonlabs-book-reader/main/docs/screenshot-reading.png)
