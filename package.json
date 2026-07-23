@@ -1,0 +1,26 @@
+{
+  "name": "elton-reader-books",
+  "version": "2.0.1",
+  "description": "Read EPUB, FB2 and PDF books inside Obsidian, highlight passages and turn them into notes.",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "postinstall": "node patch-pdfjs.cjs",
+    "dev": "node esbuild.config.mjs",
+    "build": "node esbuild.config.mjs production && node patch-pdfjs.cjs"
+  },
+  "keywords": ["obsidian", "obsidian-plugin", "epub", "fb2", "pdf", "reader", "highlights"],
+  "author": "Elton Labs",
+  "license": "MIT",
+  "devDependencies": {
+    "builtin-modules": "^3.3.0",
+    "esbuild": "0.28.1",
+    "obsidian": "latest"
+  },
+  "dependencies": {
+    "epubjs": "^0.3.93",
+    "jszip": "^3.10.1",
+    "localforage": "^1.10.0",
+    "pdfjs-dist": "3.11.174"
+  }
+}
