@@ -48,13 +48,13 @@ below in the meantime.*
 ### With BRAT
 
 1. Install **BRAT** from the community plugins list.
-2. BRAT → *Add beta plugin* → `swayinfo/eltonlabs-book-reader`
+2. BRAT → *Add beta plugin* → `swayinfo/elton-reader`
 3. Enable **Book Reader** in Community plugins.
 
 ### By hand
 
 Download `main.js`, `manifest.json` and `styles.css` from the
-[latest release](https://github.com/swayinfo/eltonlabs-book-reader/releases/latest)
+[latest release](https://github.com/swayinfo/elton-reader/releases/latest)
 into `<vault>/.obsidian/plugins/elton-reader-books/`, then reload Obsidian.
 
 ---
@@ -227,13 +227,13 @@ Google Drive, Remotely Save…). Позиция привязана к номер
 ### Через BRAT
 
 1. Установите **BRAT** из каталога плагинов.
-2. BRAT → *Add beta plugin* → `swayinfo/eltonlabs-book-reader`
+2. BRAT → *Add beta plugin* → `swayinfo/elton-reader`
 3. Включите **Book Reader** в списке плагинов.
 
 ### Вручную
 
 Скачайте `main.js`, `manifest.json` и `styles.css` из
-[последнего релиза](https://github.com/swayinfo/eltonlabs-book-reader/releases/latest)
+[последнего релиза](https://github.com/swayinfo/elton-reader/releases/latest)
 в папку `<хранилище>/.obsidian/plugins/elton-reader-books/` и перезапустите
 Obsidian.
 
