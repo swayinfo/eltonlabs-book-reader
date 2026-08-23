@@ -3,7 +3,25 @@
 .er-content figure { break-inside:avoid; margin:8px auto; text-align:center; }
 .er-content figure img { margin:0 auto; }
 .er-content figcaption { font-size:.82em; opacity:.7; margin-top:4px; text-align:center; }
-/* Allow native text selection on touch devices (Obsidian mobile sets user-select:none globally) */
+/* The selection, painted by us on a phone — see erPaintSelection. WebKit does
+   not reliably paint one inside a transformed multi-column flow, which is what a
+   book page is, so the range was live but invisible. Semi-transparent so the
+   letters stay readable through it, like a marker rather than a block.
+
+   A literal colour, not var(--er-accent): the search highlight next door
+   (er-found) uses literals for the same reason — a highlight pseudo-element does
+   not resolve custom properties the way an ordinary rule does, and a colour that
+   comes back unresolved paints nothing at all, which is the exact bug this is
+   here to fix. This blue reads on the light, sepia and dark pages alike. */
+::highlight(er-selection) { background-color: rgba(85, 72, 217, 0.28); }
+.er-eink ::highlight(er-selection) { background-color: rgba(0, 0, 0, 0.22); }
+/* Allow native text selection on touch devices (Obsidian mobile sets user-select:none globally)
+   Reverted to exactly this list on purpose. I widened it to every descendant and
+   added a ::selection colour of my own, on a guess that the system highlight was
+   too faint on the book's paper — and selection stopped being painted at all.
+   The guess was untestable from a desktop and it cost a round; the platform's
+   own highlight is what worked. Do not restyle ::selection here without a way to
+   see the result on a real phone. */
 .er-content, .er-flow, .er-flow p, .er-flow h1, .er-flow h2, .er-flow h3, .er-flow h4 {
   -webkit-user-select:text; user-select:text; -webkit-touch-callout:default;
 }
@@ -21,6 +39,12 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-lightbox-close:hover { background:rgba(255,255,255,.3); }
 .er-lightbox-close:active { transform:scale(.9); }
 .er-lightbox-hint { position:fixed; bottom:16px; left:0; right:0; text-align:center; color:rgba(255,255,255,.6); font-size:12px; font-family:'Inter',system-ui,sans-serif; pointer-events:none; }
+/* A page that spent its whole render budget twice and still did not finish. The
+   space stays reserved so the book does not reflow under the reader; the alt
+   text the loader sets is what shows inside it. */
+.er-content .er-pdf-page-img.er-pdf-heavy { display:flex; align-items:center; justify-content:center;
+  background:var(--er-lib-bg,#f3f1ec); border-style:dashed; color:var(--er-muted,#8a8578);
+  font-size:13px; padding:10px; text-align:center; }
 .er-content .er-pdf-figure { margin:0 0 14px; text-align:center; }
 .er-content .er-pdf-figure img { margin:0 auto; }
 /* "You stopped here" — brief glow on the resumed paragraph (both reader views) */
@@ -77,6 +101,8 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-theme-row { display:flex; gap:7px; padding:0 14px 4px; }
 .er-theme-btn { flex:1; padding:10px 4px; border-radius:8px; text-align:center; font-family:'Inter',system-ui,sans-serif; font-size:11px; font-weight:600; cursor:pointer; border:2px solid transparent; transition:border-color .15s,transform .1s; }
 .er-theme-btn:active { transform:scale(.93); }
+/* Button for the auto theme shows the app own colours, not the plugin ones. */
+.er-theme-auto  { background:var(--background-primary); color:var(--text-normal); box-shadow:inset 0 0 0 1px var(--background-modifier-border); }
 .er-theme-dark  { background:#12121a; color:#ddd8f0; }
 .er-theme-light { background:#faf8f3; color:#1a1a2e; box-shadow:inset 0 0 0 1px #ddd9ce; }
 .er-theme-sepia { background:#f5efe3; color:#2c2416; box-shadow:inset 0 0 0 1px #cfc4a8; }
@@ -106,7 +132,7 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-toc-item:hover { background:rgba(0,0,0,.04); opacity:1; }
 .er-toc-item.active { color:var(--er-accent); opacity:1; font-weight:600; }
 .er-toc-empty { padding:48px 20px; text-align:center; font-family:'Inter',system-ui,sans-serif; font-size:13px; color:var(--er-muted); opacity:.7; }
-.er-modal-lib .modal { width:min(94vw,1180px)!important; height:min(90vh,920px)!important; padding:0!important; background:var(--er-lib-bg,#faf8f3)!important; border:1px solid var(--er-lib-border,#ddd9ce)!important; border-radius:20px!important; overflow:hidden!important; box-shadow:0 32px 90px rgba(0,0,0,.45)!important; }
+.er-modal-lib .modal { padding:0!important; background:var(--er-lib-bg,#faf8f3)!important; border:1px solid var(--er-lib-border,#ddd9ce)!important; border-radius:20px!important; overflow:hidden!important; box-shadow:0 32px 90px rgba(0,0,0,.45)!important; }
 .er-modal-lib .modal-close-button { z-index:6; top:14px; right:14px; }
 /* Obsidian renders an empty header/title row above the modal body. With the
    library's own sepia panel below it, that empty row showed up as a white strip
@@ -175,6 +201,14 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-lib-fitbtn:hover { background:var(--er-lib-accent); border-color:var(--er-lib-accent); }
 .er-lib-fitbtn:active { transform:scale(.88); }
 .er-lib-fitbtn svg { width:15px; height:15px; }
+/* Кнопка действий с книгой — рядом с кнопкой вида обложки. Отдельная кнопка
+   нужна потому, что правой кнопки мыши на телефоне нет, а удалять книгу с
+   телефона просили так же, как с компьютера. */
+.er-lib-morebtn { position:absolute; top:9px; right:46px; z-index:4; width:31px; height:31px; display:flex; align-items:center; justify-content:center; border-radius:9px; background:rgba(18,18,28,.55); color:#fff; -webkit-backdrop-filter:blur(7px); backdrop-filter:blur(7px); border:1px solid rgba(255,255,255,.20); opacity:0; transform:scale(.82); transition:opacity .15s,transform .15s,background .15s; cursor:pointer; }
+.er-lib-card:hover .er-lib-morebtn { opacity:1; transform:scale(1); }
+.er-lib-morebtn:hover { background:var(--er-lib-accent); border-color:var(--er-lib-accent); }
+.er-lib-morebtn:active { transform:scale(.88); }
+.er-lib-morebtn svg { width:15px; height:15px; }
 .er-lib-strip { position:absolute; bottom:0; left:0; right:0; height:5px; z-index:3; background:rgba(0,0,0,.10); }
 .er-lib-strip-fill { height:100%; background:linear-gradient(90deg,var(--er-lib-accent,#5548d9),color-mix(in srgb,var(--er-lib-accent) 70%,#fff)); }
 .er-lib-info { padding:12px 13px 14px; }
@@ -197,12 +231,23 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-eink .er-lib-add, .er-eink .er-lib-empty-add { border-radius:0; box-shadow:none; }
 .er-eink .er-lib-drop { border-radius:0; backdrop-filter:none; }
 @media (max-width:600px) {
-  .er-modal-lib .modal { width:100vw!important; height:100svh!important; border-radius:0!important; }
-  .er-lib-hdr { padding:16px 18px 14px; gap:12px; }
+
+  /* ── Library header on a phone ──────────────────────────────────────────
+     The desktop header is a brand block: 30px emoji, a 23px serif title and a
+     letter-spaced subtitle, ~90px tall before the search even starts. On a
+     414px screen that is a quarter of the window spent on decoration, above a
+     header Obsidian already draws. One 52px toolbar instead — title, size,
+     add — and the search on its own line. Roughly 90px of covers come back. */
+  .er-lib-hdr { padding:0 6px 12px; gap:2px; row-gap:10px; }
+  .er-lib-logo, .er-lib-sub, .er-lib-count { display:none; }
+  .er-lib-brand { margin-right:auto; min-width:0; }
+  .er-lib-title { font-size:17px; font-weight:700; letter-spacing:-.01em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .er-lib-brand, .er-lib-size, .er-lib-add { height:52px; align-items:center; }
   .er-lib-search { flex:1 1 100%; order:3; }
-  .er-lib-grid { grid-template-columns:repeat(auto-fill,minmax(132px,1fr)); gap:18px 14px; padding:18px 16px 32px; }
-  /* Follow the narrower phone gutter used by the header and the grid. */
-  .er-lib-chips { padding:0 16px; margin:12px 0 14px; }
+  /* Wider cards: the columns follow the width the header just gave back. */
+  .er-lib-grid { grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:18px 12px; padding:16px 12px 32px; }
+  .er-lib-chips { padding:0 12px; margin:10px 0 12px; }
   .er-lib-fitbtn { opacity:.92; transform:scale(1); }
   .er-panel,.er-toc-panel { width:100%; border-left:none; border-top:1px solid var(--er-border); top:auto; height:70%; }
   .er-panel.er-panel-open { animation:er-panel-slide-up .22s cubic-bezier(.4,0,.2,1); }
@@ -211,13 +256,54 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
   .er-navbtn { width:52px; height:52px; }
   .er-navbtn svg { width:26px; height:26px; }
   .er-ibtn { width:44px; height:44px; }
-  .er-top { height:54px; gap:6px; padding:0 10px; }
+  .er-top { height:54px; gap:6px; padding:0 6px; }
   .er-top-right { gap:5px; }
-  .er-bot { height:58px; }
+  .er-bot { height:58px; padding:0 2px; }
+
+  /* The page fills the screen. On a desktop the book sits on a card with a
+     16px margin, a border and a shadow — it reads as a book on a table. On a
+     phone that margin is 32px of a 414px screen, it makes the text column
+     visibly narrower than the bars above and below it, and the seam beside the
+     page-turn arrows is exactly what "there is a gap at the sides" meant. A
+     phone screen IS the page: no margin, no frame. */
+  .er-area { margin:0; border:none; border-radius:0; box-shadow:none; }
+  /* The bars have to READ as bars. I tried giving them the page's own paper with
+     a hairline, on the theory that quieter chrome is calmer — and the top and
+     bottom edges of the book stopped being findable at all. A page needs a top
+     and a bottom. So: a whisper of the panel colour over the page, and a real
+     line, which is enough to bound the text without becoming two stripes. */
+  .er-top, .er-bot { background:color-mix(in srgb, var(--er-ui) 55%, var(--er-bg)); }
+  .er-top { border-bottom:1px solid var(--er-border); }
+  .er-bot { border-top:1px solid var(--er-border); }
+  /* Give the book its name back. The top bar had the title squeezed to
+     "Выготски…" while the timer pill held a 22px reset button used about once a
+     session. On a phone the pill keeps only the state and the clock; the reset
+     moved into the ⋯ menu (added there in the same change — hiding a control
+     without somewhere else to reach it would just be losing it). */
+  .er-timer-reset { display:none; }
+  .er-timerbtn { padding:0 8px; margin-right:2px; }
+  .er-top-title { font-size:13.5px; opacity:.75; }
+  /* Reach: the arrows move out to the edges they belong to, and the page
+     counter keeps the middle. */
+  .er-bot .er-navbtn:first-child { margin-right:auto; }
+  .er-bot .er-navbtn:last-child { margin-left:auto; }
 }
-@supports (padding-bottom:env(safe-area-inset-bottom)) {
-  .er-bot { padding-bottom:env(safe-area-inset-bottom); height:calc(50px + env(safe-area-inset-bottom)); }
+/* Obsidian's own variable, not env() straight: on desktop it is 0, and under
+   app.emulateMobile(true) it becomes a real 34px — so the home-bar gap can be
+   checked without a phone in hand. */
+.er-bot { padding-bottom:var(--safe-area-inset-bottom, 0px); height:calc(50px + var(--safe-area-inset-bottom, 0px)); }
+
+/* Clear Obsidian's floating status bar on a desktop.
+   It is `position: fixed; bottom: 0; right: 0` and sits ON TOP of whatever is in
+   the bottom-right corner of the window — which here is the "next page" arrow
+   and the page counter: "нижняя часть, футер, скрывается за строкой проводника,
+   и не вижу что там есть внизу". --status-bar-scroll-padding is the reserve
+   Obsidian itself publishes for exactly this, so the gap follows the reader's
+   own font size and stays right if the theme changes it. */
+body:not(.is-mobile) .er-bot {
+  padding-right: max(6px, var(--status-bar-scroll-padding, 30px));
 }
+
 
 /* ── Highlights ─────────────────────────────────────────────────────────── */
 .er-hl { border-radius:3px; padding:.05em 0; box-decoration-break:clone; -webkit-box-decoration-break:clone; cursor:pointer; transition:filter .12s; }
@@ -234,10 +320,14 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 /* Sit ABOVE the bottom nav bar (er-bot is 50px tall + safe-area). Docking at
    18px put the bar right on top of the page-turn arrows and the % readout —
    that was the «всё поехало» in the selection screenshot. */
-.er-hl-popup.er-hl-popup-docked { left:50% !important; right:auto; top:auto !important;
-  bottom:calc(58px + 14px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%) translateY(6px) scale(.96);
-  max-width:calc(100% - 24px); flex-wrap:wrap; justify-content:center; }
-.er-hl-popup.er-hl-popup-docked.er-hl-popup-on { transform:translateX(-50%) translateY(0) scale(1); }
+/* On a phone the class carries only the LOOK — the wrapping, the width cap.
+   WHERE it goes is decided in positionHlPopup, which places it just under the
+   selection; pinning left/top here with !important would silently overrule
+   that and put the bar back in the corner. */
+.er-hl-popup.er-hl-popup-docked { right:auto;
+  transform:translateY(6px) scale(.96);
+  max-width:calc(100% - 16px); flex-wrap:wrap; justify-content:center; }
+.er-hl-popup.er-hl-popup-docked.er-hl-popup-on { transform:translateY(0) scale(1); }
 .er-hl-sw { width:26px; height:26px; border-radius:50%; cursor:pointer; border:2px solid rgba(0,0,0,.12); transition:transform .1s; display:flex; align-items:center; justify-content:center; }
 .er-hl-sw:hover { transform:scale(1.14); }
 .er-hl-sw:active { transform:scale(.9); }
@@ -245,25 +335,34 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
    They used to carry three different treatments: grey for copy/export, an
    accent-tinted pill for bookmark/note, and nothing at all for comment and
    translate. Six buttons in three costumes read as clutter; colour in this popup
-   should mean "highlight colour" and nothing else. */
-.er-hl-copy, .er-hl-bookmark, .er-hl-note, .er-hl-cmt,
-.er-hl-translate, .er-hl-export-btn, .er-hl-trash {
+   should mean "highlight colour" and nothing else.
+
+   Every action lives in this list. A button left out of it does not fall back to
+   something neutral — it keeps .er-hl-sw, which is the COLOUR SWATCH look: a
+   ringed circle with no fill, sized for a colour and not for an icon. That is
+   what happened to "copy as a quote" and to the AI button: both were added
+   later, both stood out immediately, and neither was a styling decision.
+   tools-render-test.cjs now compares this list against the source. */
+/* На телефоне в панели остаётся ОДНА кнопка, и её легко не заметить —
+   подписчики уже жаловались, что панель выскакивает незамеченной. Поэтому там
+   она акцентная, а не серая. */
+@media (pointer: coarse) {
+  .er-hl-menu { background: var(--interactive-accent); color: var(--text-on-accent); opacity: 1; }
+  .er-hl-menu svg { color: var(--text-on-accent); }
+}
+.er-hl-copy, .er-hl-note, .er-hl-ai, .er-hl-menu {
   background: color-mix(in srgb, var(--er-text) 6%, transparent);
   color: var(--er-text);
   border-color: transparent;
   opacity: .62;
 }
-.er-hl-copy:hover, .er-hl-bookmark:hover, .er-hl-note:hover, .er-hl-cmt:hover,
-.er-hl-translate:hover, .er-hl-export-btn:hover, .er-hl-trash:hover {
+.er-hl-copy:hover, .er-hl-note:hover, .er-hl-ai:hover, .er-hl-menu:hover {
   opacity: 1;
   background: color-mix(in srgb, var(--er-text) 12%, transparent);
 }
-.er-hl-copy svg, .er-hl-bookmark svg, .er-hl-note svg, .er-hl-cmt svg,
-.er-hl-translate svg, .er-hl-export-btn svg, .er-hl-trash svg {
+.er-hl-copy svg, .er-hl-note svg, .er-hl-ai svg, .er-hl-menu svg {
   width: 15px; height: 15px; stroke-width: 1.9;
 }
-/* Deleting is the one thing that earns a colour, and only on hover. */
-.er-hl-trash:hover { color: #e5484d; }
 /* One gap separating the colour swatches from the actions, instead of a margin
    on every other button. */
 .er-hl-copy { margin-left: 10px; }
@@ -509,7 +608,20 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
   border:2px solid var(--background-modifier-border);
   border-bottom-color:var(--background-primary); }
 .er-set-body .setting-item:first-child { border-top:none; padding-top:0; }
-.er-set-body h3 { margin:26px 0 2px; font-size:15px; }
+/* Section titles inside a settings tab. Small, quiet and letter-spaced rather
+   than another line of ordinary text: their job is to break a long list into
+   groups you can skim, not to compete with the setting names under them. */
+.er-set-body h3 {
+  margin: 28px 0 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: var(--font-ui-smaller);
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.er-set-body h3:first-child { margin-top: 4px; }
 /* Phones: a row of tabs would be unusable, so stack them. */
 .is-mobile .er-set-tabs { flex-direction:column; align-items:stretch; border:none; gap:2px; }
 .is-mobile .er-set-tab { border:none !important; transform:none !important;
@@ -705,9 +817,94 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-wn-cta { text-align: center; margin-top: 14px; padding-top: 12px;
   border-top: 1px solid var(--background-modifier-border); }
 .er-wn-cta-lead { font-size: 13px; color: var(--text-muted); margin: 0 0 4px; }
-/* A wide table can't be made narrow — let it scroll inside its own box rather
-   than crushing every column to one character. */
-.er-flow table.er-table { display: block; overflow-x: auto; }
+/* ── Окно настроек чтения ───────────────────────────────────────────────────
+   Заменило полосу 300px у края экрана. Правила ниже приводят к одному виду и
+   собственные переключатели окна, и ряды, которые строит общий блок настроек:
+   иначе в одном окне соседствовали бы кнопки трёх разных размеров. */
+.er-rs-modal { width: min(760px, 94vw); max-width: 760px; }
+.er-rs { max-height: min(78vh, 760px); overflow-y: auto; overscroll-behavior: contain; padding: 2px 2px 6px; }
+@supports (height: 100dvh) { .er-rs { max-height: min(78dvh, 760px); } }
+.er-rs-title { font-size: 19px; font-weight: 600; margin: 0 0 12px; }
+.er-rs-preview {
+  border: 1px solid var(--background-modifier-border); border-radius: 12px;
+  padding: 14px 16px; margin-bottom: 18px; overflow: hidden;
+  /* Образец: строка всегда внутри рамки. Высота считается от СВОЕГО кегля
+     (его ставит _paintPreview), текст центрируется — тогда он не упирается ни
+     в верх, ни в низ при любом размере шрифта и межстрочном. */
+  display: flex;
+  align-items: center;
+  min-height: calc(1.9em + 28px);
+  overflow: hidden;
+}
+.er-rs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: start; }
+.er-rs-col { min-width: 0; }
+.er-rs-h {
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-accent); font-weight: 600;
+  padding-bottom: 6px; margin-bottom: 10px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+/* Подпись над переключателем. */
+.er-rs .er-pan-sec {
+  font-size: 12px; color: var(--text-muted); margin: 14px 0 6px;
+  text-transform: none; letter-spacing: 0;
+}
+.er-rs .er-rs-col > .er-pan-sec:first-of-type { margin-top: 0; }
+/* Равные ячейки — от этого и рассыпались ряды в старой панели: кнопки были
+   разной ширины и последняя переносилась на свою строку. */
+/* Ячейки равной ширины, но с переносом НА РЯДЫ: втиснутые в одну строку четыре
+   кнопки наезжали друг на друга («Светлая»/«Тёмная» слипались, «E-ink» рвалось
+   пополам). auto-fit держит ширину одинаковой и переносит лишние вниз. */
+.er-rs .er-col-row, .er-rs .er-theme-row, .er-rs .er-ff-row, .er-rs .er-lh-row {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(74px, 1fr)); gap: 6px;
+}
+/* Числа занимают втрое меньше места, чем слова, — и ряд из них помещается в
+   одну строку вместо двух. */
+.er-rs .er-col-row.er-rs-num { grid-template-columns: repeat(auto-fit, minmax(38px, 1fr)); }
+.er-rs .er-col-btn, .er-rs .er-theme-btn, .er-rs .er-ff-btn, .er-rs .er-lh-btn {
+  min-height: 38px; display: flex; align-items: center; justify-content: center;
+  padding: 6px 7px; border-radius: 9px; cursor: pointer; font-size: 12.5px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-primary); text-align: center; line-height: 1.15;
+  min-width: 0; white-space: normal; overflow-wrap: anywhere; hyphens: none;
+}
+.er-rs .er-col-btn.active, .er-rs .er-theme-btn.active,
+.er-rs .er-ff-btn.active, .er-rs .er-lh-btn.active {
+  border-color: var(--interactive-accent); color: var(--interactive-accent); font-weight: 600;
+}
+.er-rs .er-sz-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; align-items: center; }
+.er-rs .er-sz-btn {
+  min-height: 36px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--background-modifier-border); border-radius: 9px; cursor: pointer;
+}
+.er-rs .er-sz-label { font-weight: 600; min-width: 56px; text-align: center; }
+.er-rs .er-pan-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; line-height: 1.35; }
+.er-rs-foot { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--background-modifier-border); }
+.er-rs .er-hist-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.er-rs .er-act-row { margin-top: 12px; }
+.er-rs .er-act-btn {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  padding: 8px 14px; border-radius: 9px; border: 1px solid var(--background-modifier-border);
+}
+/* Телефон: окно становится листом снизу, группы — друг под другом, ячейки
+   крупнее, чтобы попадать пальцем. */
+@media (max-width: 700px) {
+  .er-rs-modal { width: 100vw; max-width: 100vw; }
+  .er-rs-grid { grid-template-columns: 1fr; gap: 16px; }
+  .er-rs { max-height: none; }
+  .er-rs .er-col-btn, .er-rs .er-theme-btn, .er-rs .er-ff-btn,
+  .er-rs .er-lh-btn, .er-rs .er-sz-btn { min-height: 44px; font-size: 14px; }
+}
+
+/* A wide table has to FIT the reading column. The previous rule gave it its own
+   scroller (`display:block; overflow-x:auto`), which reads fine in a normal page
+   but does nothing here: inside a column layout such a box is monolithic, so it
+   simply spilled sideways across the neighbouring columns. Measured on a
+   public-domain book — a table 3936px wide in a 664px column, six columns of
+   the book covered by one table. Fixed layout with a hard cap makes the columns
+   share the width and the text wrap instead. */
+.er-flow table.er-table { width: 100%; max-width: 100%; table-layout: fixed; }
+.er-flow table.er-table td, .er-flow table.er-table th { overflow-wrap: anywhere; }
 @media (max-width: 600px) {
   .er-flow table.er-table { font-size: .78em; }
   .er-flow pre.er-code { font-size: .74em; }
@@ -758,3 +955,997 @@ img.er-pdf-lazy:not([data-loaded="1"]) { background:color-mix(in srgb,var(--er-t
 .er-find-off:hover { text-decoration: underline; }
 /* E-ink cannot show amber usefully — invert instead. */
 .er-eink ::highlight(er-found) { background-color: #000; color: #fff; }
+
+/* Book failed to open — replaces an inline-styled error paragraph. */
+.er-area .er-load-error{padding:40px;color:var(--er-muted);margin:auto;text-align:center}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Classes replacing styles that used to be written straight onto elements
+   from JavaScript. Kept here so themes and user snippets can reach them.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* Show / hide. Last in the file so it wins over the class that sets the
+   element's normal display, without needing !important. */
+.er-hidden { display: none; }
+
+/* A settings row that stacks instead of splitting left/right.
+   Obsidian puts the control beside the name and description, which is right for
+   a toggle and wrong for a multi-line field: the quote-template box took the
+   whole row and squeezed its own title down to a few clipped letters, and the
+   resize handle had no room to be dragged. Title and explanation on top, field
+   the full width underneath, and it grows downwards the way a textarea should. */
+.er-set-stacked {
+  display: block;
+}
+.er-set-stacked .setting-item-info {
+  margin-right: 0;
+  margin-bottom: var(--size-4-2);
+}
+.er-set-stacked .setting-item-control {
+  width: 100%;
+  justify-content: stretch;
+}
+.er-tpl-input {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  font-family: var(--font-monospace);
+  font-size: var(--font-ui-smaller);
+  line-height: 1.5;
+}
+
+/* Off-screen textarea used by the clipboard fallback on webviews without
+   navigator.clipboard. Must stay focusable, so it is moved, not hidden. */
+.er-offscreen { position: fixed; left: -9999px; top: 0; opacity: 0; }
+
+/* Page-turn animation. A state rather than a style: it is taken off to make a
+   jump instant, then put back for ordinary turns. */
+.er-flow-anim { transition: transform .28s cubic-bezier(.4, 0, .2, 1); }
+
+/* Blocks inside the reader's own settings panels. These are painted with the
+   reader's palette (--er-*), not Obsidian's, because the panel carries the
+   book's theme — sepia, dark or e-ink — and not the app's. */
+.er-panel-hint { margin-bottom: 9px; }
+.er-panel-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--er-border);
+  background: var(--er-bg);
+  color: var(--er-text);
+  font-size: 13px;
+}
+.er-panel-actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
+.er-panel-link,
+.er-panel-link-strong,
+.er-panel-link-spaced {
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--er-accent);
+  user-select: none;
+}
+.er-panel-link-strong { font-weight: 600; }
+.er-panel-link-spaced { margin-top: 8px; }
+.er-inline-link { cursor: pointer; text-decoration: underline; color: var(--er-accent); }
+
+/* Translation dialog. */
+.er-tr-box { margin: 10px 0; }
+.er-tr-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.er-centered { margin: auto; }
+
+/* Library cover art. Scoped tightly enough to beat a theme's background rules
+   without !important, which would in turn block the reader's own themes. */
+.er-lib-cover.er-cover-img,
+.er-lib-card .er-cover-img {
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* The mobile reader is a full-screen dialog, and stays one: as a leaf, Obsidian
+   floats its header buttons over the top of the book and the mobile navbar over
+   the bottom, and the workspace keeps the swipe gestures — a swipe left opens
+   the file sidebar instead of turning the page. A modal is above all of that.
+
+   Nothing here measures anything. The status bar strip goes on the FIRST ROW
+   inside the window, from Obsidian's own variable, which is exactly what its own
+   full-screen phone modals do (.mod-sidebar-layout .modal-header in app.css).
+   Reading that variable from JavaScript is what never worked — WebKit does not
+   substitute env() through getComputedStyle. In CSS it has always worked. */
+.modal.er-fullscreen-modal {
+  /* A modal is a FLEX ITEM inside .modal-container, and a flex item shrinks.
+     width:100vw was read as a wish, not a size: the mobile build gives the
+     container padding of its own, the item shrank to fit it, and the result was
+     8px of dimmed background down each side of the book — measured off the
+     screen, and identical on every build where the reader was a dialog while a
+     leaf showed none. flex:0 0 auto is what makes the declared width binding. */
+  flex: 0 0 auto;
+  width: 100vw;
+  min-width: 100vw;
+  max-width: none;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  top: 0;
+  left: 0;
+  transform: none;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+/* The mobile build pads the modal container itself; unchecked it shows as bands
+   of dimmed background down both sides of the book. */
+.er-fullscreen-container.modal-container { padding: 0 !important; }
+.modal.er-fullscreen-modal .er-fullscreen-content,
+.er-fullscreen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  position: relative;
+}
+/* Clear of the clock — the top bar begins where the status bar ends. */
+.er-fullscreen-content { padding-top: var(--safe-area-inset-top, 0px); }
+/* The progress line joins the flow instead of floating.
+   Floating, it had to be pushed down by the status bar strip — and landed on the
+   top bar's own bottom border, so the reader saw two lines a pixel apart. As the
+   first child in the flow it sits directly under the clock, above the toolbar,
+   which is where a progress line belongs anyway. */
+.er-fullscreen-modal .er-pbar { position: static; flex: 0 0 auto; }
+/* One way out, and it is ours: the reader's own ← in the top bar closes the book
+   properly, so Obsidian's floating ✕ is a duplicate.
+
+   Themes redraw this button, and the redraw is what makes it a problem here:
+   Cupertino turns it into a floating white circle pinned at top:16px with an
+   "✕" glyph in a pseudo-element. Our window fills the screen, so top:16px is
+   inside the status bar, on top of the battery. Hidden three ways — by the modal
+   class, by the container class, and as a direct child — because a theme only
+   has to move it one level for a single selector to miss, and visibility and
+   pointer-events go with it so a theme that re-asserts display cannot bring back
+   a tappable ghost. Still scoped to our own window: no other dialog in Obsidian
+   loses its way out. */
+.er-fullscreen-modal .modal-close-button,
+.er-fullscreen-container .modal-close-button,
+.er-fullscreen-modal .modal-header-button,
+.er-fullscreen-container .modal-header-button {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Opening a book: hold the text back until it is showing the resumed page.
+   Laying the book out necessarily paints spread 0 first, and readers saw the
+   book open at the beginning and then jump. The content fades in once the jump
+   has been committed — a fade rather than a hard swap so the arrival reads as
+   deliberate instead of as a flicker. The chrome around it (top bar, progress)
+   stays visible throughout, so the reader can see the book is opening. */
+.er-area { transition: opacity .16s ease-out; }
+.er-area.er-booting { opacity: 0; }
+/* Scrolling mode: nothing to turn, so the page arrows and the tap-to-turn
+   zones go away instead of sitting there doing nothing. */
+.er-scrolling .er-navbtn { display: none; }
+.er-scrolling .er-area::before, .er-scrolling .er-area::after { display: none; }
+/* Loading curtain. The pages are being laid out behind it; a blank screen makes
+   people think the book (or the plugin) hung, so this shows a page-shaped
+   skeleton that breathes instead. */
+.er-view, .er-mview { position: relative; }
+.er-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: var(--er-bg, #faf8f3);
+}
+.er-veil-skel { width: min(78%, 520px); display: flex; flex-direction: column; gap: 14px; }
+.er-veil-line {
+  height: 12px;
+  border-radius: 7px;
+  background: var(--er-text, #1a1a2e);
+  opacity: .07;
+  animation: er-veil-breathe 1.6s ease-in-out infinite;
+}
+.er-veil-line:nth-child(2) { width: 92%; animation-delay: .08s; }
+.er-veil-line:nth-child(3) { width: 97%; animation-delay: .16s; }
+.er-veil-line:nth-child(4) { width: 88%; animation-delay: .24s; }
+.er-veil-line:nth-child(5) { width: 95%; animation-delay: .32s; }
+.er-veil-line:nth-child(6) { width: 74%; animation-delay: .40s; }
+.er-veil-line:nth-child(7) { width: 90%; animation-delay: .48s; }
+.er-veil-line:nth-child(8) { width: 60%; animation-delay: .56s; }
+@keyframes er-veil-breathe { 0%, 100% { opacity: .06; } 50% { opacity: .16; } }
+.er-veil-text {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 12px;
+  color: var(--er-muted, #8a8678);
+  opacity: .8;
+}
+@media (prefers-reduced-motion: reduce) { .er-veil-line { animation: none; opacity: .1; } }
+.er-eink .er-veil-line { animation: none; opacity: .12; }
+
+/* An e-ink panel ghosts on fades, and its refresh is slow enough that a
+   transition reads as a smear. Hide outright and show outright instead. */
+.er-eink .er-area { transition: none; }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Polish pass: motion curves, press feedback, keyboard focus.
+   The last two are also what the community plugin guidelines ask for.
+   ────────────────────────────────────────────────────────────────────── */
+
+.er-reader-root,
+.er-lib-modal {
+  /* The built-in CSS easings are weak; these have the punch that makes a
+     transition read as intentional rather than as lag. */
+  --er-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Opening a book: strong ease-out, so the page feels like it arrives rather
+   than fades. Overrides the plain ease-out declared with .er-area above. */
+.er-area { transition: opacity .16s var(--er-ease-out, ease-out); }
+
+/* Press feedback. Every pressable thing in the reader should visibly answer
+   the finger; without it a tap on a phone feels like nothing happened.
+   Kept subtle — the button should acknowledge, not perform. */
+.er-ibtn:active,
+.er-hl-popup button:active,
+.er-lib-card:active,
+.er-panel-link:active,
+.er-panel-link-strong:active,
+.er-panel-link-spaced:active {
+  transform: scale(0.97);
+}
+
+/* Keyboard focus. Only on :focus-visible, so a mouse click never leaves a ring
+   behind, but tabbing through the reader always shows where you are. */
+.er-ibtn:focus-visible,
+.er-lib-card:focus-visible,
+.er-hl-popup button:focus-visible,
+.er-panel-input:focus-visible,
+.er-inline-link:focus-visible,
+.er-panel-link:focus-visible,
+.er-panel-link-strong:focus-visible,
+.er-panel-link-spaced:focus-visible {
+  outline: 2px solid var(--er-accent);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* Touch targets. The guidelines ask for 44x44 as a minimum on touch; the icon
+   buttons are 38px on the desktop layout, which is fine for a mouse but not for
+   a thumb. Widened wherever the pointer is coarse rather than by screen size,
+   so a touchscreen laptop gets it too. */
+@media (pointer: coarse) {
+  .er-ibtn { min-width: 44px; min-height: 44px; }
+  .er-hl-popup button { min-width: 44px; min-height: 44px; }
+  /* Панель теперь несёт только цвета и «⋯», поэтому кнопки можно дать под
+     палец целиком: пять целей по --er-tap проходят даже по узкому телефону. */
+  .er-hl-sw { width: calc(var(--er-tap) - 8px); height: calc(var(--er-tap) - 8px); }
+  .er-hl-popup-docked { gap: 5px; }
+  .er-hl-copy svg, .er-hl-note svg, .er-hl-ai svg, .er-hl-menu svg { width: 17px; height: 17px; }
+}
+
+/* Reduced motion drops DECORATION here — the card cascade, the pill sliding in,
+   buttons shrinking under a press.
+   The page turn is deliberately NOT in this list. It is the reader's main piece
+   of feedback: the slide is what says the book moved sideways and which way, and
+   without it a turn is an unexplained flash of different text. Twice it was
+   weakened here — first removed, then cut to 0.12s — and both times it simply
+   read as broken to anyone who had switched animations off in Windows, which is
+   a common thing to do for reasons that have nothing to do with this plugin.
+   An OS-wide hint should not silently take away a core affordance, so the page
+   turn now has its own setting instead (Чтение → «Анимация листания»), and the
+   OS preference only decides what that setting starts as. */
+@media (prefers-reduced-motion: reduce) {
+  .er-ibtn:active,
+  .er-hl-popup button:active,
+  .er-lib-card:active,
+  .er-panel-link:active,
+  .er-panel-link-strong:active,
+  .er-panel-link-spaced:active {
+    transform: none;
+  }
+}
+
+/* A settings group opened in its own window. Sized so the list breathes but
+   never outgrows the screen; the actions stay pinned while the body scrolls,
+   so "Done" is always reachable without scrolling to the bottom first. */
+.er-settings-group { max-width: 640px; }
+.er-settings-group .er-group-body {
+  max-height: min(60vh, 520px);
+  overflow-y: auto;
+  /* Room for the focus ring on the first and last control. */
+  padding: 2px;
+}
+.er-settings-group h3 {
+  margin: 0 0 var(--size-4-2);
+  font-size: var(--font-ui-large);
+}
+.er-settings-group .er-group-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--size-4-3);
+  padding-top: var(--size-4-3);
+  border-top: 1px solid var(--background-modifier-border);
+}
+.er-settings-group .er-group-actions button { transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+.er-settings-group .er-group-actions button:active { transform: scale(0.97); }
+.er-settings-group .er-group-actions button:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+/* The AI conversation.
+   Built like a chat and not like a stack of panels: a head that stays, a log
+   that takes whatever room is left and scrolls, a composer under it. On a phone
+   the old layout put four rows of controls on screen — the quote, a chip, an
+   input with a word-button, and two more buttons — and left the conversation
+   itself about one line tall. */
+/* Непрозрачный фон обязателен: тема делает окна полупрозрачными, и сквозь
+   разговор просвечивал размытый текст книги — читать невозможно. */
+
+/* ── Окна плагина на телефоне: один общий закон ────────────────────────────
+   Раньше каждое окно жило по-своему: одно на всю ширину, другое узкое, третье
+   не прокручивалось, у четвёртого содержимое упиралось в края. Здесь заданы
+   общие правила для ВСЕХ окон плагина, чтобы это не расходилось снова.
+
+   Работает только там, где палец: на компьютере окна остаются как были. */
+@media (pointer: coarse) {
+  .modal.er-ai-modal,
+  .modal.er-rs-modal,
+  .modal.er-settings-group,
+  .modal.er-info-modal,
+  .modal.er-onb-modal,
+  .modal.er-setup-modal,
+  .modal.er-confirm-modal {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    max-height: var(--er-sheet);
+    /* Тема может делать окна полупрозрачными с блюром: поверх страницы книги
+       читать такое невозможно. */
+    --modal-background: var(--background-primary);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .er-ai-modal .modal-content,
+  .er-rs-modal .modal-content,
+  .er-settings-group .modal-content,
+  .er-info-modal .modal-content,
+  .er-onb-modal .modal-content,
+  .er-setup-modal .modal-content,
+  .er-confirm-modal .modal-content {
+    padding: var(--er-pad);
+    padding-bottom: calc(var(--er-pad) + var(--er-safe-bottom));
+    max-height: calc(var(--er-sheet) - var(--er-safe-bottom));
+    overflow-y: auto;
+    /* Прокрутка внутри окна не должна утягивать за собой страницу книги. */
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Кнопки внутри окон — под палец. */
+  .er-rs .er-col-btn, .er-rs .er-theme-btn, .er-rs .er-ff-btn,
+  .er-rs .er-lh-btn, .er-rs .er-sz-btn,
+  .er-onb-modal button, .er-setup-modal button, .er-confirm-modal button {
+    min-height: var(--er-tap);
+  }
+}
+
+/* Клавиатура на телефоне. Obsidian собран на Capacitor, поэтому у окна есть
+   честные события keyboardWillShow/Hide с точной высотой — по ним плагин ставит
+   --er-kb. Пока клавиатура открыта, окно прижимается к верху и укорачивается,
+   иначе строка ввода оказывается ПОД клавиатурой и не видно, что печатаешь. */
+.modal.er-kb-up {
+  align-self: flex-start;
+  margin-top: var(--er-safe-top);
+  height: calc(100dvh - var(--er-kb, 0px) - var(--er-safe-top) - 8px);
+  max-height: calc(100dvh - var(--er-kb, 0px) - var(--er-safe-top) - 8px);
+  transition: height .25s cubic-bezier(0.38, 0.7, 0.125, 1);
+}
+.modal.er-kb-up .modal-content { max-height: 100%; }
+@supports not (height: 100dvh) {
+  .modal.er-kb-up {
+    height: calc(100vh - var(--er-kb, 0px) - var(--er-safe-top) - 8px);
+    max-height: calc(100vh - var(--er-kb, 0px) - var(--er-safe-top) - 8px);
+  }
+}
+
+/* ── Адаптивный слой ───────────────────────────────────────────────────────
+   Размеры интерфейса плагина задаются здесь ОДИН раз и меняются по классу
+   устройства. Раньше каждая правка под телефон дописывалась в своё место, и
+   поэтому на разных экранах всё разъезжалось по-разному.
+
+   --er-tap    минимальный размер кнопки: 44px там, где палец (рекомендация Apple
+               и Material), 32px под мышь;
+   --er-pad    поле окна, --er-gap промежуток между элементами;
+   --er-sheet  высота листа-окна: dvh, а не vh — на телефоне видимая высота
+               меняется вместе с адресной строкой и клавиатурой;
+   --er-safe-* поля под чёлку и домашнюю полосу, ноль на десктопе. */
+:root {
+  --er-tap: 32px;
+  --er-pad: 16px;
+  --er-gap: 8px;
+  --er-radius: 12px;
+  --er-fs-ui: 13px;
+  --er-sheet: min(88vh, 940px);
+  --er-safe-top: env(safe-area-inset-top, 0px);
+  --er-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --er-safe-left: env(safe-area-inset-left, 0px);
+  --er-safe-right: env(safe-area-inset-right, 0px);
+}
+@supports (height: 100dvh) {
+  :root { --er-sheet: min(88dvh, 940px); }
+}
+/* Палец вместо мыши: крупнее цели, шире промежутки. */
+@media (pointer: coarse) {
+  :root {
+    --er-tap: 44px;
+    --er-pad: 16px;
+    --er-gap: 10px;
+    --er-fs-ui: 14px;
+    --er-sheet: 86vh;
+  }
+  @supports (height: 100dvh) {
+    :root { --er-sheet: 86dvh; }
+  }
+}
+/* Узкий телефон: поля меньше, иначе на 320px от содержимого ничего не остаётся. */
+@media (max-width: 380px) {
+  :root { --er-pad: 12px; --er-gap: 8px; }
+}
+/* Планшет и десктоп: окно не должно растягиваться на весь экран. */
+@media (min-width: 900px) {
+  :root { --er-pad: 20px; }
+}
+.modal.er-ai-modal {
+  width: min(100%, 680px);
+  max-width: 100%;
+  min-width: 0;
+  --modal-background: var(--background-primary);
+  background: var(--background-primary) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.er-ai-modal .modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  min-height: 0;
+}
+.er-ai-head { flex: 0 0 auto; display: flex; align-items: flex-start; gap: var(--size-4-2); }
+.er-ai-headtext { flex: 1 1 auto; min-width: 0; }
+/* Своя кнопка закрытия: родная на телефоне уходит под клавиатуру. */
+.er-ai-modal .er-ai-close {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: none;
+  background: var(--background-modifier-hover);
+  color: var(--text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.er-ai-modal .er-ai-close svg { width: 15px; height: 15px; }
+.er-ai-modal .er-ai-close:active { transform: scale(0.94); }
+.er-ai-title {
+  font-size: var(--font-ui-medium);
+  font-weight: 600;
+  color: var(--text-normal);
+}
+/* Which book this is from — the model is told, so the reader should see it too. */
+.er-ai-book {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Context, not the subject: two lines, opens on a tap. */
+.er-ai-quote {
+  flex: 0 0 auto;
+  padding: var(--size-2-3) var(--size-4-2);
+  border-left: 2px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  font-size: var(--font-ui-smaller);
+  line-height: 1.5;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-height: calc(3em + var(--size-2-3) * 2);
+}
+.er-ai-quote-open {
+  display: block;
+  max-height: 24vh;
+  overflow-y: auto;
+}
+.er-ai-log {
+  flex: 1 1 auto;
+  min-height: 180px;
+  max-height: 52vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--size-4-2);
+  padding-right: var(--size-2-2);
+}
+/* Nothing said yet: say what the window is for and offer the one thing most
+   readers want first. */
+.er-ai-empty {
+  margin: auto;
+  padding: var(--size-4-4) var(--size-4-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--size-4-1);
+  text-align: center;
+}
+.er-ai-empty-icon { color: var(--text-faint); display: flex; }
+.er-ai-empty-icon svg { width: 28px; height: 28px; }
+.er-ai-empty-title { font-weight: 600; color: var(--text-normal); }
+.er-ai-empty-sub {
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  max-width: 280px;
+  line-height: 1.5;
+}
+.er-ai-modal .er-ai-chip {
+  margin-top: var(--size-4-2);
+  padding: var(--size-2-3) var(--size-4-3);
+  border-radius: var(--radius-l);
+  font-size: var(--font-ui-small);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.er-ai-modal .er-ai-chip:active { transform: scale(0.97); }
+/* Messages. The reader's own line is a bubble on the right; the answer is a card
+   on the left, because it is long and a page of markdown inside a tight bubble
+   is harder to read, not friendlier. */
+.er-ai-msg {
+  max-width: 88%;
+  padding: var(--size-2-3) var(--size-4-2);
+  border-radius: var(--radius-l);
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  user-select: text;
+  animation: er-ai-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes er-ai-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.er-ai-msg-me {
+  align-self: flex-end;
+  border-bottom-right-radius: var(--radius-s);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  white-space: pre-wrap;
+}
+.er-ai-group { align-self: stretch; display: flex; flex-direction: column; gap: 2px; }
+.er-ai-msg-ai {
+  max-width: 100%;
+  border-bottom-left-radius: var(--radius-s);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+}
+.er-ai-msg-err { color: var(--text-error); border-color: var(--text-error); }
+.er-ai-msg-ai h1, .er-ai-msg-ai h2, .er-ai-msg-ai h3, .er-ai-msg-ai h4 {
+  font-size: var(--font-ui-medium);
+  margin: var(--size-4-3) 0 var(--size-4-1);
+}
+.er-ai-msg-ai > :first-child { margin-top: 0; }
+.er-ai-msg-ai > :last-child { margin-bottom: 0; }
+.er-ai-msg-ai ul, .er-ai-msg-ai ol { margin: var(--size-4-1) 0; padding-left: var(--size-4-5); }
+.er-ai-msg-ai li { margin: var(--size-2-2) 0; }
+.er-ai-msg-ai pre { overflow-x: auto; }
+/* Copy / keep, under the answer they belong to. */
+.er-ai-acts { display: flex; gap: var(--size-4-1); padding-left: var(--size-2-2); }
+.er-ai-modal .er-ai-act {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  font-size: var(--font-ui-smaller);
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.er-ai-modal .er-ai-act svg { width: 13px; height: 13px; }
+.er-ai-modal .er-ai-act:active { transform: scale(0.97); }
+/* On a mouse the buttons stay out of the way until the answer is hovered; on a
+   touchscreen there is no hover, so they are simply always there. */
+@media (hover: hover) and (pointer: fine) {
+  .er-ai-acts { opacity: 0; transition: opacity 150ms ease; }
+  .er-ai-group:hover .er-ai-acts, .er-ai-acts:focus-within { opacity: 1; }
+  .er-ai-modal .er-ai-act:hover { color: var(--text-normal); background: var(--background-modifier-hover); }
+}
+/* Waiting for the answer: dots that bounce, one after another. Same indicator
+   as in Elton AI, so the two windows wait the same way. */
+.er-ai-typing { display: flex; align-items: center; gap: var(--size-4-2); }
+.er-ai-typing-dots { display: flex; gap: 3px; }
+.er-ai-typing-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-faint);
+  animation: er-ai-dot 1.2s ease-in-out infinite;
+}
+.er-ai-typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.er-ai-typing-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes er-ai-dot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
+.er-ai-typing-text { font-size: var(--font-ui-small); color: var(--text-muted); }
+/* The composer. One line and one round button: the word "Отправить" in a pill
+   took a third of the row and said nothing an arrow does not. */
+.er-ai-bar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--size-4-2);
+  padding-top: var(--size-4-2);
+  /* Строка ввода стояла впритык к нижнему краю окна: на телефоне у модалки
+     своего нижнего поля нет, а под ним ещё домашняя полоса iPhone. */
+  padding-bottom: var(--size-4-2);
+  border-top: 1px solid var(--background-modifier-border);
+}
+.er-ai-modal .er-ai-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  border-radius: var(--radius-m);
+}
+.er-ai-modal .er-ai-send {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  box-shadow: none;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.er-ai-modal .er-ai-send svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  color: var(--text-on-accent);
+}
+.er-ai-modal .er-ai-send:active { transform: scale(0.94); }
+@media (hover: hover) and (pointer: fine) {
+  .er-ai-modal .er-ai-send:hover { background: var(--interactive-accent-hover); color: var(--text-on-accent); }
+}
+/* On a phone the window is the screen: the conversation gets the space instead
+   of being a slit between the quote and the buttons. */
+@media (pointer: coarse) {
+  .modal.er-ai-modal { width: 100%; height: var(--er-sheet); }
+  /* Content touched the edges on a phone: Obsidian gives a mobile modal no
+     padding of its own, and height:100% squeezed out what was left. */
+  .er-ai-modal .modal-content {
+    height: 100%;
+    padding: var(--er-pad);
+    padding-bottom: calc(var(--er-pad) + var(--er-safe-bottom));
+  }
+  /* Домашняя полоса iPhone: под ней ничего нажимать нельзя. */
+  .er-ai-bar { padding-bottom: calc(var(--size-4-3) + env(safe-area-inset-bottom, 0px)); }
+  .er-ai-log { max-height: none; }
+  .er-ai-modal .er-ai-input { height: 40px; }
+  .er-ai-modal .er-ai-send { width: 40px; height: 40px; }
+  .er-ai-modal .er-ai-act { padding: 6px 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .er-ai-typing-dot, .er-ai-msg { animation: none; opacity: 1; }
+}
+.er-ai-sys {
+  width: 100%;
+  min-height: 7em;
+  resize: vertical;
+  font-family: var(--font-interface);
+}
+/* The ✨ button's icon size is set with the other actions', above — it used to
+   override it here at 17px, which is a visible 2px larger than its neighbours. */
+
+/* Footnote references. Marked as a link without shouting: a number that is
+   underlined in the middle of a sentence pulls the eye off the text. */
+.er-flow .er-fb2-ref {
+  color: var(--er-accent);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+  padding: 0 .05em;
+}
+.er-flow .er-fb2-ref:hover { border-bottom-style: solid; }
+
+/* The way back out of the endnotes. Floats over the page rather than pushing
+   the text around, and sits above the bottom bar so it never covers the page
+   controls. Disappears the moment it is used. */
+.er-note-back {
+  position: absolute;
+  left: 50%;
+  bottom: calc(58px + 14px + var(--safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  min-height: 44px;
+  box-sizing: border-box;
+  border-radius: 999px;
+  background: var(--er-ui);
+  color: var(--er-text);
+  border: 1px solid var(--er-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .18);
+  font-size: 13px;
+  cursor: pointer;
+  z-index: 6;
+  animation: er-note-back-in .18s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.er-note-back svg { width: 15px; height: 15px; }
+.er-note-back:active { transform: translateX(-50%) scale(0.97); }
+.er-note-back:focus-visible { outline: 2px solid var(--er-accent); outline-offset: 2px; }
+@keyframes er-note-back-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.er-eink .er-note-back { animation: none; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  .er-note-back { animation: none; }
+  .er-note-back:active { transform: translateX(-50%); }
+}
+
+/* Continuous scrolling instead of pages. The clip becomes the scroller, so the
+   flow can be as tall as the book needs. Momentum scrolling on iOS is opt-in. */
+.er-clip.er-clip-scroll {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+.er-clip.er-clip-scroll .er-flow {
+  /* Nothing is translated in this mode; the browser owns the motion. */
+  transform: none !important;
+  will-change: auto;
+}
+/* Page-turn arrows still work (a screenful at a time) but the side click zones
+   would fight the scroll, so they are off here. */
+.er-navclick .er-clip-scroll { cursor: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .er-clip.er-clip-scroll { scroll-behavior: auto; }
+}
+
+
+/* Two earlier attempts at placing this bar on a phone lived here — pinned to
+   the bottom edge, then pinned to whichever edge was further from the
+   selection. Both were wrong in the same way: they put the bar somewhere other
+   than where the reader was looking. It is now placed right under the selection
+   by positionHlPopup, so there is nothing left to pin here. */
+
+/* A subfolder chip sits under the folder it belongs to. Quieter than its
+   parent, so the row still reads as a hierarchy rather than a flat list. */
+.er-lib-chip.er-lib-chip-sub {
+  opacity: .82;
+  font-size: .93em;
+}
+.er-lib-chip.er-lib-chip-sub:hover,
+.er-lib-chip.er-lib-chip-sub.er-lib-chip-on { opacity: 1; }
+.er-lib-chip:focus-visible {
+  outline: 2px solid var(--er-accent, var(--interactive-accent));
+  outline-offset: 2px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Library: proportions, density and the hierarchy of a card.
+   Refinement of the existing warm-paper look, not a new one — the reader has a
+   character already and the library should feel like the same product.
+   ────────────────────────────────────────────────────────────────────── */
+
+/* A library wants WIDTH. Capped at 1180px it stood taller than it was wide on a
+   large screen and read as a narrow column — the shape of a document, not of a
+   shelf. Widening it turns roughly five columns into seven or eight, so more of
+   the collection is visible at once, which is the whole point of a library. */
+/* Scoped above the phone breakpoint on purpose: the full-screen phone rule sits
+   EARLIER in this file, so an unscoped rule here would outrank it and the
+   library would stop filling a phone screen. */
+@media (min-width: 601px) {
+  .er-modal-lib .modal,
+  .er-modal-lib.modal-container .modal {
+    /* `width` alone never worked: Obsidian caps a modal with `max-width` and
+       drives it through --modal-width / --modal-max-width, so the box stayed
+       near 640px however wide the width declaration was. That is why the library
+       looked like a tall column even while asking for 1180px. All of them have
+       to agree, or the narrowest wins. */
+    --modal-width: min(94vw, 1560px);
+    --modal-max-width: min(94vw, 1560px);
+    --modal-height: var(--er-sheet);
+    --modal-max-height: var(--er-sheet);
+    width: min(94vw, 1560px) !important;
+    max-width: min(94vw, 1560px) !important;
+    height: var(--er-sheet) !important;
+    max-height: var(--er-sheet) !important;
+  }
+}
+
+/* Slightly denser grid to match the extra width: the covers stay the same size,
+   there are simply more of them per row, and the gutters tighten a little so the
+   rows read as a shelf rather than as scattered tiles. */
+.er-lib-grid {
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 26px 20px;
+  padding-bottom: 40px;
+}
+
+/* The cover-fit button was invisible until hover, which on a mouse means it is
+   invisible until you already know it is there. Now it rests quietly at low
+   opacity and comes forward when the card is under the pointer — discoverable
+   without competing with the artwork. Its own hover still lights it fully.
+   Touch devices have no hover at all, so there it simply stays visible. */
+.er-lib-fitbtn { opacity: .34; transform: scale(.94); }
+.er-lib-card:hover .er-lib-fitbtn { opacity: .95; transform: scale(1); }
+.er-lib-fitbtn:hover { opacity: 1; }
+@media (hover: none) { .er-lib-fitbtn, .er-lib-morebtn { opacity: .9; transform: scale(1); } }
+.er-lib-morebtn { opacity: .34; transform: scale(.94); }
+.er-lib-card:hover .er-lib-morebtn { opacity: .95; transform: scale(1); }
+.er-lib-morebtn:hover { opacity: 1; }
+
+/* Card hierarchy: the title is what you scan for, so it gets the weight and a
+   tighter measure; the status line steps back rather than shouting alongside it.
+   The cover already carries the colour — the text under it should be calm. */
+.er-lib-book-title {
+  font-size: 13.5px;
+  font-weight: 650;
+  letter-spacing: -.006em;
+  line-height: 1.36;
+  margin-bottom: 3px;
+}
+.er-lib-book-meta {
+  font-weight: 500;
+  font-size: 10.5px;
+  letter-spacing: .02em;
+  opacity: .82;
+}
+.er-lib-info { padding: 11px 12px 13px; }
+
+/* Lifting the card is enough; the extra shadow made it feel heavy on a light
+   background. Softer and closer to the surface reads as paper being picked up. */
+.er-lib-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .16);
+}
+
+/* Progress along the bottom of a cover: thinner, so it marks the book without
+   becoming a design element of its own.
+   The track is mixed from the THEME's own text colour rather than from black —
+   a black track disappears into a dark theme, which is exactly the kind of
+   detail that makes a themed interface feel like it was only half themed. */
+.er-lib-strip {
+  height: 4px;
+  background: color-mix(in srgb, var(--er-lib-text, #000) 14%, transparent);
+}
+
+/* Everything the library draws follows the reader's theme, so a card lifted on
+   a dark theme should not be lifted by a shadow tuned for paper. */
+.er-lib-card:hover {
+  box-shadow: 0 14px 34px color-mix(in srgb, var(--er-lib-text, #000) 18%, transparent);
+}
+/* E-ink ghosts on shadows and gradients — keep it flat and high-contrast. */
+.er-eink .er-lib-card,
+.er-eink .er-lib-card:hover { box-shadow: none; transform: none; }
+.er-eink .er-lib-fitbtn { opacity: 1; transform: none; }
+.er-eink .er-lib-strip { background: #000; }
+
+/* Books arrive in a short cascade rather than all at once. Only the first two
+   rows are staggered — beyond that the delay would be felt as slowness, and a
+   reader scrolling fast should never wait for an animation. */
+@media (prefers-reduced-motion: no-preference) {
+  .er-lib-card {
+    animation: er-card-in .32s cubic-bezier(0.23, 1, 0.32, 1) backwards;
+  }
+  .er-lib-card:nth-child(1)  { animation-delay: 0ms; }
+  .er-lib-card:nth-child(2)  { animation-delay: 24ms; }
+  .er-lib-card:nth-child(3)  { animation-delay: 48ms; }
+  .er-lib-card:nth-child(4)  { animation-delay: 72ms; }
+  .er-lib-card:nth-child(5)  { animation-delay: 96ms; }
+  .er-lib-card:nth-child(6)  { animation-delay: 108ms; }
+  .er-lib-card:nth-child(7)  { animation-delay: 120ms; }
+  .er-lib-card:nth-child(n+8) { animation-delay: 132ms; }
+}
+@keyframes er-card-in {
+  from { opacity: 0; transform: translateY(9px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.er-eink .er-lib-card { animation: none; }
+
+/* Wide screens can afford a roomier gutter around the shelf. */
+@media (min-width: 1400px) {
+  .er-lib-grid { padding-left: 38px; padding-right: 38px; }
+  .er-lib-hdr { padding-left: 38px; padding-right: 38px; }
+  .er-lib-chips { padding-left: 38px; padding-right: 38px; }
+}
+
+/* ── The library living in a tab (or in its own window) ──────────────────── */
+/* Same drawing as the dialog, but it fills its leaf instead of being a floating
+   box: no size cap, no rounding, no shadow. This is what lets it be maximised —
+   Obsidian can move any leaf into a separate OS window, a modal never leaves. */
+.er-lib-as-view.er-modal-lib,
+.er-lib-as-view .view-content {
+  padding: 0 !important;
+  overflow: hidden;
+}
+.er-lib-as-view .er-lib {
+  height: 100%;
+  border-radius: 0;
+}
+/* The sizing rules above target `.er-modal-lib .modal`; a leaf has no `.modal`,
+   so nothing to undo — but the container itself must not inherit a cap. */
+.er-lib-as-view {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  background: var(--er-lib-bg, #faf8f3);
+}
+/* In a tab the window chrome already provides a close affordance, and the
+   drag-and-drop overlay should hug the leaf rather than a dialog's inset. */
+.er-lib-as-view .er-lib-drop { inset: 0; border-radius: 0; }
+
+/* A wide window earns more books per row; the grid was tuned for a dialog. */
+@media (min-width: 1700px) {
+  .er-lib-as-view .er-lib-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}
+
+/* ── Phone trim ──────────────────────────────────────────────────────────── */
+/*
+   Nothing here measures the status bar. Both windows are leaves now, and a leaf
+   is laid out by Obsidian inside the safe area — the notch, the header and the
+   way back are its business, not ours. What is left is the home indicator at
+   the foot, which sits over content Obsidian knows nothing about. */
+@media (max-width: 600px) {
+  .er-lib-grid { padding-bottom: calc(32px + var(--safe-area-inset-bottom, 0px)); }
+
+  /* The cover-fit button has no hover to hide behind on a touch screen, so it
+     sat at nearly full strength on top of every cover. Small and quiet: it is a
+     rarely used control, and the artwork is the point of the card. */
+  .er-lib-fitbtn {
+    opacity: .5;
+    width: 26px;
+    height: 26px;
+    top: 7px;
+    right: 7px;
+  }
+  .er-lib-fitbtn svg { width: 13px; height: 13px; }
+  .er-lib-fitbtn:active { opacity: 1; }
+}

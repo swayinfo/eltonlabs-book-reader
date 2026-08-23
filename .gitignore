@@ -8,8 +8,21 @@ node_modules/
 # main.js
 # pdf.worker.js
 
+# Working notes between sessions, not part of the plugin.
+NOTES-3.0.md
+SUBMIT.md
+
 # Local editor / OS noise
 .DS_Store
 Thumbs.db
 *.bak
 main.js.shipped
+
+# Dev tools kept with the source, not part of the plugin build.
+# eslint.config.mjs is deliberately NOT ignored: the community scanner and any
+# reviewer should be able to reproduce the lint run from the repository.
+tools-*.cjs
+
+# Промо-ролик и вспомогательные артефакты — не часть плагина.
+promo-video/
+main.js.json

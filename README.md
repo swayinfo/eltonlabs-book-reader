@@ -1,310 +1,357 @@
-# 📖 Book Reader — EPUB, FB2 & PDF Reader for Obsidian
+# 📖 Book Reader
 
-*by [Elton Labs](https://t.me/eltonlabs)*
+Read EPUB, FB2 and PDF books inside Obsidian — with highlights, comments, notes
+and reading progress that syncs with your vault.
 
-**Read EPUB, FB2 and PDF books directly inside [Obsidian](https://obsidian.md)** — a beautiful, distraction-free book reader with text highlighting, notes, and reading progress that syncs into your vault. Works on both desktop and mobile (Windows, macOS, Linux, Android, iOS).
+**[Русский](#-book-reader-по-русски) · English**
 
-https://github.com/user-attachments/assets/a207e646-720b-4dc9-9ca7-16397490e8e6
+Works on desktop and on mobile (Android / iOS).
 
-
-> A lightweight Obsidian reading plugin: open a book, highlight what matters, turn highlights into linked notes — without ever leaving your knowledge base.
-
-![Reading a book inside Obsidian — two-column paged view with a reading timer](https://raw.githubusercontent.com/swayinfo/eltonlabs-book-reader/main/docs/screenshot-reading.png)
-
-🎥 **[Watch the video walkthrough](https://www.youtube.com/watch?v=JFrPBxry7zA)** — *the narration is in Russian; YouTube's auto-dubbing provides an English track.*
-
-![The library — covers, reading progress and category filters](https://raw.githubusercontent.com/swayinfo/eltonlabs-book-reader/main/docs/screenshot-library.png)
-
-The interface is **bilingual (English / Russian)** — choose your language in the plugin settings (Russian is the default, English is one click away).
-
-**Keywords:** Obsidian EPUB reader · Obsidian FB2 reader · Obsidian PDF reader · read books in Obsidian · book highlighting · annotate PDFs · reading progress sync · highlights to notes.
+![Library](docs/screenshot-library.png)
+![Reading](docs/screenshot-reading.png)
 
 ---
 
-## Why read your books inside Obsidian?
+## What it does
 
-Most people keep their notes in Obsidian but read books somewhere else — then copy quotes back by hand. **Book Reader** closes that gap: the book, your highlights, and your notes all live in the same vault. Every quote can become a real, linked Markdown note, so your reading feeds directly into your knowledge base.
+**Reading.** EPUB, FB2 and PDF. Paged layout in one or two columns, like a real
+book. Dark, light and sepia themes, plus an e-ink mode for Android readers.
+Adjustable font, size, line spacing, alignment and line width. Table of contents
+built from PDF bookmarks, headings or the book's own printed contents page.
+Full-text search across the whole book.
 
-- 📚 One place for **reading and note-taking** — no more app switching.
-- 🖍️ **Highlights become notes** with backlinks to the book.
-- ☁️ **Reading progress and highlights are plain files** in your vault, so they sync anywhere you sync Obsidian.
-- 📱 **Desktop and mobile**, with a real paged reading experience.
+**Highlights and notes.** Four colours. A comment can be attached to any
+highlight and travels with it into your notes. Turn a highlight into a note, or
+export all of a book's highlights at once — grouped by chapter, with page
+numbers.
 
----
+**Progress.** Stored as files in your vault next to the books, so it rides
+whatever you already use to sync (Obsidian Sync, iCloud, Google Drive, Remotely
+Save…). The position is anchored by paragraph, so a phone and a desktop find the
+same spot at any screen size.
 
-## ✨ Features
-
-### Reading
-- **Formats:** EPUB (`.epub`), FB2 (`.fb2`) and PDF (`.pdf`). FB2 files in the legacy windows-1251 encoding are detected and decoded correctly.
-- **Paged mode** with a 1- or 2-column layout, like a real book, with smooth page turns.
-- **Mobile-friendly:** fullscreen reading, swipe to turn pages, long-press to select text.
-- **Themes:** dark, light, sepia. **Fonts:** Georgia, Lora, Inter. Adjustable font size, line height and column count.
-- **Table of contents** — jump to any chapter in one tap.
-- **Jump to a page** — tap the page counter at the bottom and type a number to go straight to that page/spread, instead of paging there.
-
-### Reading progress
-- Progress is **saved as a file in your vault** (`reading-progress.json`, next to your books), so it syncs across devices along with your vault.
-- Each book **reopens exactly where you left off** (the paragraph is briefly highlighted).
-- **Position history** — roll back to earlier reading spots. Manual **"Save reading position"** command.
-
-### Highlights & notes
-- Highlight text in **4 colors** (yellow, green, blue, pink); recolor or remove any highlight.
-- All highlights are gathered in a side panel, tied to the book.
-- **Create a note from a highlight** — a separate Markdown note with a backlink to the book.
-- **Export highlights** into the book's note; the highlight color is preserved as a colored `<mark>` (toggle in settings).
-- **Translate a selection** *(optional, off by default)* — press the translate button in the selection popup to see the fragment translated next to the original; copy it, or save it into a note under the original quote. Uses Google Translate, needs no API key. See [Privacy & network use](#-privacy--network-use).
-- **A separate note per book** *(optional, off by default)* — a book gets its own note created and linked automatically on first open, so every highlight from it lands in that note.
-- **Export a single highlight** — right-click it (or tap the **⋯** button) in the Highlights panel to send just that one quote into a new note or the book note.
-
-### Library
-- Visual **book library** with covers, progress and metadata.
-- **Search by title** in the library header.
-- **Cover fit** toggle (fill / contain), remembered per book. Crisp, high-resolution covers.
-- Opens from the 📖 ribbon icon or a command.
-
-### Sync across devices
-- Reading progress and highlights are **small JSON files in your vault** (`reading-progress.json`, `reading-highlights.json`), so they travel with **any** vault sync — Obsidian Sync, self-hosted LiveSync, iCloud, Google Drive, Remotely Save, etc. Positions are anchored by paragraph, so phone and desktop land on the same spot at any screen size.
-- **Cover thumbnails are cached locally per device** (`thumb-cache.json`) and are intentionally **not** synced — this keeps the synced data tiny and free of conflicts (covers just regenerate on each device).
-- A **Sync method** setting (Auto / cloud folder / none) tells the plugin how eagerly to re-read progress when a book opens, so cloud folders that update with a delay still merge cleanly.
+**Library.** A visual grid of every book with covers, progress and categories.
+Add books by dragging them in.
 
 ---
 
-## 🔒 Privacy & network use
+## Install
 
-**The reader works fully offline.** Your books, highlights, reading progress and notes never leave your device — there is no telemetry, no analytics and no account.
+### From the community plugins list
 
-There is exactly **one** optional feature that uses the network:
+<!-- Enable this section once the plugin has been accepted into the directory. -->
+<!-- Settings → Community plugins → Browse → search for "Book Reader" → Install. -->
 
-- **Translate a selection** (*off by default*). When you turn it on in settings and press the translate button, the **selected fragment** is sent to Google Translate's public endpoint (`translate.googleapis.com`) to be translated, and the result is shown back to you. No API key or account is needed. Nothing else is sent — not the book, not your notes. Google's handling of that request is covered by [Google's Privacy Policy](https://policies.google.com/privacy). This endpoint is rate-limited, so the feature is meant for selections, not for translating whole books. Leave the toggle off and the plugin makes no network requests at all.
+*Not in the community directory yet — the submission is in review. Use BRAT
+below in the meantime.*
 
-PDF rendering uses a `pdf.worker.js` **bundled with the plugin**, so PDFs work offline too; only if that local file is missing does the plugin fall back to fetching the worker from a CDN.
+### With BRAT
 
----
+1. Install **BRAT** from the community plugins list.
+2. BRAT → *Add beta plugin* → `swayinfo/eltonlabs-book-reader`
+3. Enable **Book Reader** in Community plugins.
 
-## 🎛️ Commands
+### By hand
 
-Available from the command palette (`Ctrl/Cmd + P`):
-
-| Command | Description |
-|---|---|
-| **Open library** | Visual grid of all your books |
-| **Open PDF in Book Reader** | Open the active PDF in the reader |
-| **Save reading position** | Pin the current spot |
-| **Export highlights to notes** | Dump all of a book's highlights |
-
-Also: right-click a `.pdf` file → **"📖 Open in Book Reader"**.
+Download `main.js`, `manifest.json` and `styles.css` from the
+[latest release](https://github.com/swayinfo/eltonlabs-book-reader/releases/latest)
+into `<vault>/.obsidian/plugins/elton-reader-books/`, then reload Obsidian.
 
 ---
 
-## ⚙️ Settings
+## Privacy and network use
 
-- **Language** — interface language (Russian / English), default Russian.
-- **Books folder** — where the plugin looks for books.
-- **Reading-data folder** — where progress, highlights and rescue backups are kept (`reading-progress.json`, `reading-highlights.json`). Empty = next to your books.
-- Theme, font, font size, line height, column count.
-- **Notes from highlights** — note template (Templater-compatible), target folder for new notes, book-notes folder for the backlink picker, a per-book template (book → **(i)** button), and "keep highlight color on export".
+**The reader works fully offline.** Books, progress, highlights and notes never
+leave your device — the PDF engine is bundled into the plugin, so not even fonts
+or workers are fetched from the internet.
 
-> All folder/path settings are empty by default — the plugin never hardcodes paths into someone else's vault. Configure it to your setup.
+There is exactly one feature that makes a network request, and it is **off by
+default**:
 
----
+| Feature | Service | What is sent | Default |
+|---|---|---|---|
+| Translate a selection | Google Translate (`translate.googleapis.com`) | Only the passage you selected | **Off** |
+| AI passage breakdown | The service **you** pick — Elton AI (`api.eltonlabs.org`), OpenRouter, OpenAI, or a local Ollama / LM Studio | Only the passage you selected | **Off** |
 
-## 📥 Install & update via BRAT
+Both are turned on in *Settings → Translation*, and each says the same thing in
+its own description before you enable it. The AI breakdown additionally needs a
+provider and a key before it will do anything.
 
-[BRAT](https://github.com/TfTHacker/obsidian42-brat) (Beta Reviewers Auto-update Tool) installs and auto-updates plugins straight from GitHub.
+Choosing **Ollama or LM Studio** keeps everything on your own machine — the
+passage never reaches the internet at all.
 
-1. Install **BRAT** from **Community plugins** and enable it.
-2. Command palette → **BRAT: Add a beta plugin**, and paste the repo:
-   ```
-   swayinfo/eltonlabs-book-reader
-   ```
-3. Keep **"Enable after installing the plugin"** on and click **Add Plugin**. The 📖 icon appears in the ribbon.
-4. **Updates:** BRAT checks on Obsidian startup, or run **BRAT: Check for updates to all beta plugins**.
+The API key you enter is stored in the plugin's settings inside your vault. If
+your vault syncs, the key syncs with it.
 
-> Each GitHub release must include **`manifest.json`**, **`main.js`**, **`styles.css`** and **`pdf.worker.js`** (the last one is needed for offline PDF reading).
-
-## 🛠️ Manual install (without BRAT)
-
-1. Download `main.js`, `styles.css`, `manifest.json` and `pdf.worker.js` from a release.
-2. Copy them into `<your-vault>/.obsidian/plugins/elton-reader-books/`.
-3. Restart Obsidian → **Settings → Community plugins** → enable **Book Reader by Elton Labs**.
+No account is required for the plugin itself, and there is no telemetry, no
+analytics and no ads.
 
 ---
 
-## 🏗️ Building from source
+## What's new in 3.0
 
-The plugin is open source: everything it does lives in `src/main.js`. The
-libraries it relies on (pdf.js, epub.js, JSZip, localForage) come from npm and
-are bundled at build time — they are not vendored into the repository.
+**Ask an AI about a passage.** Select text and press ✨: a translation, a
+breakdown of the words that are actually hard, why the phrasing is what it is,
+and the etymology where it helps you remember. Use your own OpenRouter or OpenAI
+key, the Elton AI proxy, or a **local Ollama / LM Studio** — with a local model
+the passage never leaves your machine. Off until you set it up.
+
+**Copy a passage as a quote, in one click.** The clipboard gets the quote, the
+book, the page and a link that opens the book at that exact paragraph — ready to
+paste into any note. The shape is a template you can change.
+
+**Quotes link back to the book.** Every exported quote carries a link that opens
+the book at the paragraph it came from, and lands there whatever your font size
+or column count.
+
+**Read by scrolling** instead of turning pages, if that suits you better.
+
+**Footnotes work in FB2.** Tapping a note number takes you to the note, and a
+"back to the text" pill takes you back where you were.
+
+**Highlighting across paragraphs.** A selection spanning several paragraphs used
+to be cut off at the end of the first one.
+
+**Nested folders in the library.** Picking a folder now includes everything
+inside it, and opens its subfolders as the next step down.
+
+**Reading progress in the book note's properties**, so Bases can chart and sort
+it. Off by default.
+
+**Books no longer lose their ending.** The reader measured a book's width using
+only its paragraphs, and cut the page flow off at that point — so a book whose
+tail was a list, a code listing or a table simply stopped early. Measured in a
+real browser: a book needing 119 spreads showed 5. Fixed, and the column stride
+is now exact instead of drifting, which also removed the biggest cause of slow
+loading in very long books.
+
+**PDF text is no longer glued together.** Title pages came out as
+`PRO ВластьRobert GREENEThe 48 laws ofPOWER`. Lines that wrapped back to the left
+margin were being joined with nothing between them.
+
+**No more phantom headings in PDFs.** Ordinary sentences were promoted to bold
+headings on any page whose average type size was dragged down by small print.
+
+**Separate look on each device.** Font size, theme, spacing and column count are
+remembered separately for computer, tablet and phone — a comfortable size on a
+tablet no longer makes the text enormous on a phone. Folders, templates and
+reading progress stay shared.
+
+**Comments reach your notes.** A comment written under a highlight was dropped
+when that highlight became a note. It now travels with the quote.
+
+**Works in a separate window.** Selecting text, page keys and the fullscreen
+image viewer were all broken when the book was dragged out into its own window.
+
+**Line width.** Cap lines at 60–90 characters so a maximised window stays
+readable.
+
+**Notes open beside the book** instead of replacing it, and can be filed in the
+book's own folder.
+
+**Typing a folder path no longer creates a folder per keystroke** on Windows.
+
+**Book files behave like files.** Reveal the open book in the folder tree,
+rename, move or delete it from the tab menu.
+
+Full history: [`versions.json`](versions.json) and the release notes.
+
+---
+
+## Building from source
 
 ```bash
 npm install
-npm run build      # produces main.js and copies pdf.worker.js
-npm run dev        # same, in watch mode with an inline source map
+npm run build      # -> main.js
+npx eslint src/    # community plugin rules
 ```
 
-`main.js` in the repository root is the build output that Obsidian loads;
-`pdf.worker.js` is copied from `pdfjs-dist` so PDFs keep working offline. Both
-are regenerated by `npm run build` — edit `src/main.js`, never the bundle.
-
-## 🛟 Tips & troubleshooting
-
-- **Text looks misaligned / broken after opening or closing a sidebar panel or tab?** Press the **Refresh** button (🔄) in the reader's top bar to rebuild the layout. The reading area is measured when the book opens, so changing the window layout (opening/closing a side panel, another tab, resizing the window) can shift the columns — one tap on Refresh re-lays the page and keeps your current position.
+The plugin's own code is `src/main.js`. `main.js` at the repository root is the
+build output — generated by esbuild, with pdf.js, epub.js, JSZip and localForage
+bundled in. `npm run build` on a clean checkout reproduces the released file
+byte for byte.
 
 ---
 
-## 💬 Contact & community
+## Licence
 
-Made by **Elton Labs**. Follow along, ask questions, and suggest features:
+MIT — see [LICENSE](LICENSE).
 
-- ▶️ **YouTube:** [@eltonlabs](https://www.youtube.com/@eltonlabs)
-- ✈️ **Telegram:** [@eltonlabs](https://t.me/eltonlabs)
-
-If this plugin is useful to you, a ⭐ on the repo helps other Obsidian users find it.
-
-<br>
+Built by **Elton Labs** · [t.me/eltonlabs](https://t.me/eltonlabs)
 
 ---
 ---
 
-# 📖 Book Reader by Elton Labs — читалка EPUB и PDF для Obsidian (Русская версия)
+# 📖 Book Reader (по-русски)
 
-Красивая читалка **EPUB** и **PDF** прямо внутри Obsidian — с выделениями, заметками и синхронизацией прогресса чтения в ваш vault.
+Читалка **EPUB**, **FB2** и **PDF** прямо внутри Obsidian — с выделениями,
+комментариями, заметками и прогрессом чтения, который синхронизируется вместе с
+вашим хранилищем.
 
-> Работает и на компьютере, и на телефоне (Android/iOS).
-
-Интерфейс **двуязычный (русский / английский)** — язык выбирается в настройках плагина (по умолчанию русский).
-
----
-
-## ✨ Возможности
-
-### Чтение
-- **Форматы:** EPUB и PDF.
-- **Постраничный режим** с вёрсткой в 1 или 2 колонки (как в настоящей книге), плавное перелистывание.
-- **На телефоне** — полноэкранный режим, перелистывание свайпом, выделение текста долгим нажатием.
-- **Темы оформления:** тёмная, светлая, сепия.
-- **Шрифты:** Georgia, Lora, Inter.
-- Настройка **размера шрифта**, **межстрочного интервала** и **числа колонок**.
-- **Оглавление (TOC)** — переход к любой главе одним тапом.
-- **Переход на страницу** — тап по счётчику страниц внизу, введите номер — и книга откроется сразу на нужной странице/развороте, без пролистывания.
-
-### Прогресс чтения
-- Прогресс **сохраняется в vault** (файл `reading-progress.json` рядом с книгами) — значит, синхронизируется между устройствами вместе с хранилищем.
-- При повторном открытии книга **открывается на том месте, где вы остановились** (абзац коротко подсвечивается).
-- История позиций — можно вернуться к предыдущим местам чтения.
-- Команда **«Сохранить позицию чтения»** для ручной отметки.
-
-### Выделения и заметки
-- **Выделение текста** в 4 цвета (жёлтый, зелёный, голубой, розовый); цвет можно изменить или удалить выделение.
-- Все выделения собираются в отдельной панели и привязаны к книге.
-- **Создать заметку из выделения** — отдельная заметка с обратной ссылкой на книгу.
-- **Экспорт выделений** в заметку книги (командой или из панели).
-- **Цвет выделения сохраняется** при экспорте: цитата оборачивается в цветной `<mark>` и виден в готовой заметке (в режиме чтения и live preview, без плагинов). Отключается тумблером в настройках.
-- **Экспорт одного выделения** — правый клик по нему (или кнопка **⋯**) в панели «Выделения» отправляет именно эту цитату в новую заметку или в заметку книги.
-
-### Библиотека
-- Визуальная **библиотека книг** с обложками, прогрессом и метаданными.
-- **Поиск по названию** прямо в шапке библиотеки.
-- **Вид обложки** — кнопка в углу обложки переключает между «заполнить» (обрезает по карточке) и «вписать» (показывает обложку целиком в пропорции на мягком размытом фоне). Настройка запоминается отдельно для каждой книги.
-- Чёткие обложки в высоком разрешении.
-- Открывается иконкой 📖 на боковой панели (ribbon) или командой.
-
-### Синхронизация между устройствами
-- Прогресс чтения и выделения — это **небольшие JSON-файлы в хранилище** (`reading-progress.json`, `reading-highlights.json`), поэтому они переезжают **любым** способом синхронизации хранилища — Obsidian Sync, self-hosted LiveSync, iCloud, Google Drive, Remotely Save и т.п. Привязка к месту — по номеру абзаца, так что телефон и ПК находят одну и ту же точку при любом размере экрана.
-- **Обложки кэшируются локально на каждом устройстве** (`thumb-cache.json`) и намеренно **не** синхронизируются — благодаря этому синкаемые данные остаются крошечными и без конфликтов (обложки просто пересобираются на каждом устройстве).
-- Настройка **«Способ синхронизации»** (Авто / облачная папка / без синхронизации) подсказывает плагину, насколько свежо перечитывать прогресс при открытии книги, чтобы облачные папки с задержкой сливались без конфликтов.
+Работает и на компьютере, и на телефоне (Android / iOS).
 
 ---
 
-## 🎛️ Команды
+## Что умеет
 
-Доступны через палитру команд (`Ctrl/Cmd + P`):
+**Чтение.** EPUB, FB2 и PDF. Постраничный режим в одну или две колонки, как в
+настоящей книге. Тёмная, светлая и сепия темы, отдельный режим для e-ink
+читалок. Настраиваются шрифт, размер, интервал, выравнивание и ширина строки.
+Оглавление собирается из закладок PDF, заголовков или печатного содержания самой
+книги. Поиск по всему тексту.
 
-| Команда | Описание |
-|---|---|
-| **Открыть библиотеку** | Визуальная сетка всех книг |
-| **Открыть PDF в Book Reader** | Открыть активный PDF в читалке |
-| **Сохранить позицию чтения** | Зафиксировать текущее место |
-| **Экспортировать выделения в заметки** | Выгрузить все выделения книги |
+**Выделения и заметки.** Четыре цвета. К любому выделению можно написать
+комментарий — он поедет вместе с цитатой в заметку. Выделение превращается в
+заметку одной кнопкой, а все выделения книги выгружаются разом: по главам, с
+номерами страниц.
 
-Также: правый клик (или меню файла) на `.pdf` → **«📖 Открыть в Book Reader»**.
+**Прогресс.** Хранится файлами в хранилище, рядом с книгами, поэтому едет тем же
+способом, которым вы синхронизируете само хранилище (Obsidian Sync, iCloud,
+Google Drive, Remotely Save…). Позиция привязана к номеру абзаца, так что телефон
+и компьютер находят одно и то же место при любом размере экрана.
 
----
-
-## ⚙️ Настройки
-
-- **Язык** — язык интерфейса (русский / английский), по умолчанию русский.
-- **Папка с книгами** — где плагин ищет книги.
-- **Папка данных чтения** — где хранятся прогресс чтения, выделения и резервные копии (`reading-progress.json`, `reading-highlights.json`). Пусто — рядом с книгами. Эти файлы синхронизируются вместе с хранилищем, поэтому прогресс переезжает между устройствами.
-- Тема, шрифт, размер шрифта, межстрочный интервал, количество колонок.
-
-### Заметки из выделений
-- **Шаблон заметки** — путь к вашему шаблону (Templater), который применяется к каждой новой заметке из выделения. Пусто — заметка создаётся без шаблона, только с цитатой и ссылкой на книгу. Работает и без Templater (тогда переменные шаблона просто вырезаются).
-- **Папка для новых заметок** — куда сохранять заметки из выделений. Пусто — корень хранилища.
-- **Папка заметок-книг** — из этой папки берётся список при выборе заметки книги, куда ведёт обратная ссылка «— из [[…]]». Пусто — можно выбрать любую заметку хранилища.
-- **Шаблон для отдельной книги** — откройте книгу → кнопка **(i)** вверху → поле **«Шаблон для этой книги»**. Позволяет задать свой шаблон под конкретную книгу или жанр; если пусто — используется общий шаблон из настроек.
-- **Сохранять цвет выделений при экспорте** — цитата оборачивается в цветной `<mark>`, цвет виден в готовой заметке. Выключите, если нужны обычные цитаты без HTML.
-
-> Все эти пути по умолчанию пустые — плагин ничего не привязывает к чужому хранилищу. Настройте под себя.
+**Библиотека.** Все книги с обложками, прогрессом и категориями. Книги можно
+просто перетащить в окно.
 
 ---
 
-## 📥 Установка и обновление через BRAT
+## Установка
 
-[BRAT](https://github.com/TfTHacker/obsidian42-brat) (Beta Reviewers Auto-update Tool) позволяет ставить и автоматически обновлять плагины напрямую из GitHub, без публикации в каталоге Obsidian.
+### Из каталога плагинов
 
-### 1. Установите BRAT
-1. Откройте **Настройки → Сторонние плагины (Community plugins) → Обзор**.
-2. Найдите **BRAT** (`Obsidian42 - BRAT`), установите и включите.
+<!-- Включить этот раздел, когда плагин примут в каталог. -->
+<!-- Настройки → Сторонние плагины → Обзор → найти «Book Reader» → Установить. -->
 
-### 2. Добавьте Book Reader
-1. Откройте палитру команд (`Ctrl/Cmd + P`) → **BRAT: Add a beta plugin**
-   (или: Настройки → BRAT → **Add Beta plugin**).
-2. В поле репозитория вставьте:
-   ```
-   swayinfo/eltonlabs-book-reader
-   ```
-   *(или полный URL: `https://github.com/swayinfo/eltonlabs-book-reader`)*
-3. Убедитесь, что включена опция **«Enable after installing the plugin»**, и нажмите **Add Plugin**.
-4. Готово — иконка 📖 появится на боковой панели.
+*В каталоге пока нет — заявка на рассмотрении. Пока ставьте через BRAT.*
 
-### 3. Обновление
-- **Автоматически:** BRAT проверяет обновления при запуске Obsidian и подтягивает новые релизы.
-- **Вручную:** палитра команд → **BRAT: Check for updates to all beta plugins**.
+### Через BRAT
 
-> ⚠️ Чтобы BRAT увидел версию, в каждом GitHub-релизе должны быть приложены файлы **`manifest.json`**, **`main.js`**, **`styles.css`** и **`pdf.worker.js`** (последний нужен для чтения PDF офлайн).
+1. Установите **BRAT** из каталога плагинов.
+2. BRAT → *Add beta plugin* → `swayinfo/eltonlabs-book-reader`
+3. Включите **Book Reader** в списке плагинов.
+
+### Вручную
+
+Скачайте `main.js`, `manifest.json` и `styles.css` из
+[последнего релиза](https://github.com/swayinfo/eltonlabs-book-reader/releases/latest)
+в папку `<хранилище>/.obsidian/plugins/elton-reader-books/` и перезапустите
+Obsidian.
 
 ---
 
-## 🛠️ Установка вручную (без BRAT)
+## Приватность и интернет
 
-1. Скачайте `main.js`, `styles.css`, `manifest.json` и `pdf.worker.js` из нужного релиза на GitHub.
-2. Скопируйте их в папку:
-   ```
-   <ваш-vault>/.obsidian/plugins/elton-reader-books/
-   ```
-3. Перезапустите Obsidian → Настройки → Сторонние плагины → включите **Book Reader by Elton Labs**.
+**Читалка работает полностью офлайн.** Книги, прогресс, выделения и заметки
+никуда не уходят — движок PDF встроен в плагин, из интернета не подгружается
+даже он.
+
+Ровно одна функция ходит в сеть, и она **выключена по умолчанию**:
+
+| Функция | Сервис | Что уходит | По умолчанию |
+|---|---|---|---|
+| Перевод выделенного | Google Translate (`translate.googleapis.com`) | Только выделенный вами фрагмент | **Выключено** |
+| Разбор фрагмента через ИИ | Тот сервис, который **вы** выберете — Elton AI (`api.eltonlabs.org`), OpenRouter, OpenAI или локальный Ollama / LM Studio | Только выделенный вами фрагмент | **Выключено** |
+
+Обе включаются в *Настройки → Перевод*, и у каждой то же самое написано в
+описании до того, как вы её включите. Разбору вдобавок нужен выбранный сервис и
+ключ — без них он ничего не делает.
+
+Если выбрать **Ollama или LM Studio**, всё остаётся на вашем компьютере —
+фрагмент вообще не попадает в интернет.
+
+Ключ хранится в настройках плагина, внутри вашего хранилища. Если хранилище
+синхронизируется, ключ едет вместе с ним.
+
+Аккаунт для самого плагина не нужен. Ни телеметрии, ни аналитики, ни рекламы.
 
 ---
 
-## ❓ Заметки по платформам
+## Что нового в 3.0
 
-- **Десктоп:** книга открывается во вкладке рабочей области.
-- **Мобильные:** книга открывается в полноэкранном режиме. Перелистывание — свайпом; выделение текста — долгим нажатием и протягиванием.
+**Разбор фрагмента через ИИ.** Выделяешь текст, жмёшь ✨ — перевод, разбор
+действительно трудных слов, объяснение оборота и этимология там, где она помогает
+запомнить. Свой ключ OpenRouter или OpenAI, прокси Elton AI либо **локальная
+Ollama / LM Studio** — с локальной моделью фрагмент вообще не покидает компьютер.
+Выключено, пока не настроите.
+
+**Скопировать фрагмент как цитату — одной кнопкой.** В буфер попадает цитата,
+книга, страница и ссылка, открывающая книгу ровно на том абзаце. Вставляйте куда
+угодно. Формат задаётся шаблоном.
+
+**Цитаты ведут обратно в книгу.** У каждой выгруженной цитаты есть ссылка на тот
+абзац, откуда она взята, и она приводит туда при любом размере шрифта и числе
+колонок.
+
+**Чтение прокруткой** вместо страниц, если так привычнее.
+
+**В FB2 работают сноски.** Тап по номеру ведёт к примечанию, а плашка «вернуться
+к тексту» возвращает обратно.
+
+**Выделение через несколько абзацев.** Раньше обрезалось по концу первого.
+
+**Вложенные папки в библиотеке.** Выбор папки включает всё внутри неё и открывает
+подпапки следующим уровнем.
+
+**Прогресс чтения в свойствах заметки книги** — чтобы работало в Bases.
+Выключено по умолчанию.
+
+**Книги больше не теряют концовку.** Ширина книги мерилась только по абзацам, и
+по этому же замеру поток обрезался — книга, которая заканчивается списком, кодом
+или таблицей, просто вставала раньше времени. Замер в настоящем браузере: книга,
+которой нужно 119 разворотов, показывала 5. Починено. Заодно шаг колонки стал
+точным вместо плавающего, а это была главная причина тормозов в очень больших
+книгах.
+
+**Текст в PDF больше не слипается.** Титульные страницы выходили как
+`PRO ВластьRobert GREENEThe 48 laws ofPOWER`: строки, переносившиеся к левому
+краю, склеивались без пробела.
+
+**Больше нет ложных заголовков в PDF.** Обычные предложения становились жирными
+заголовками на страницах, где средний размер шрифта занижен мелким кеглем.
+
+**Свой вид на каждом устройстве.** Размер шрифта, тема, интервал и число колонок
+запоминаются отдельно для компьютера, планшета и телефона — удобный размер на
+планшете больше не делает текст гигантским на телефоне. Папки, шаблоны и прогресс
+чтения остаются общими.
+
+**Комментарии доезжают до заметок.** Комментарий под выделением терялся, когда
+выделение превращалось в заметку. Теперь едет вместе с цитатой.
+
+**Работает в отдельном окне.** Выделение текста, листание клавишами и просмотр
+картинок на весь экран не работали, если вынести книгу в своё окно.
+
+**Ширина строки.** Ограничение в 60–90 символов, чтобы развёрнутое на весь экран
+окно осталось читаемым.
+
+**Заметка открывается рядом с книгой**, а не вместо неё, и может создаваться в
+папке самой книги.
+
+**Ввод пути к папке больше не создаёт папку на каждый символ** в Windows.
+
+**С файлом книги можно работать как с файлом:** показать в дереве папок,
+переименовать, переместить или удалить прямо из меню вкладки.
+
+Полная история — в [`versions.json`](versions.json) и в описаниях релизов.
 
 ---
 
-## 🛟 Советы и решение проблем
+## Сборка из исходников
 
-- **Текст отображается криво после открытия или закрытия боковой панели / вкладки?** Нажмите кнопку **Обновить** (🔄) на верхней панели читалки — она перестроит вид. Область чтения замеряется при открытии книги, поэтому изменение раскладки окна (открытие/закрытие боковой панели, другой вкладки, смена размера окна) может сдвинуть колонки. Один тап по «Обновить» пере-раскладывает страницу и сохраняет текущую позицию.
+```bash
+npm install
+npm run build      # -> main.js
+npx eslint src/    # правила каталога плагинов
+```
+
+Собственный код плагина — `src/main.js`. Файл `main.js` в корне репозитория это
+результат сборки: его делает esbuild, вкладывая внутрь pdf.js, epub.js, JSZip и
+localForage. `npm run build` на чистой копии повторяет опубликованный файл
+байт в байт.
 
 ---
 
-## 💬 Контакты и сообщество
+## Лицензия
 
-Автор — **Elton Labs**. Подписывайтесь, задавайте вопросы и предлагайте идеи:
+MIT — см. [LICENSE](LICENSE).
 
-- ▶️ **YouTube:** [@eltonlabs](https://www.youtube.com/@eltonlabs)
-- ✈️ **Telegram:** [@eltonlabs](https://t.me/eltonlabs)
-
-Если плагин вам полезен — звезда ⭐ на репозитории помогает другим пользователям Obsidian его найти.
+Сделано **Elton Labs** · [t.me/eltonlabs](https://t.me/eltonlabs)
