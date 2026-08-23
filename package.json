@@ -1,6 +1,6 @@
 {
   "name": "elton-reader-books",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "description": "Read EPUB, FB2 and PDF books inside Obsidian, highlight passages and turn them into notes.",
   "main": "main.js",
   "type": "module",
@@ -31,6 +31,11 @@
     "epubjs": "^0.3.93",
     "jszip": "^3.10.1",
     "localforage": "^1.10.0",
-    "pdfjs-dist": "3.11.174"
+    "pdfjs-dist": "^6.2.108"
+  },
+  "overrides": {
+    "@xmldom/xmldom": "^0.9.12",
+    "brace-expansion": "^5.0.9",
+    "tar": "^7.5.22"
   }
 }

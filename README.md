@@ -7,6 +7,11 @@ and reading progress that syncs with your vault.
 
 Works on desktop and on mobile (Android / iOS).
 
+> **Feedback goes to the Telegram bot [@book_in_obsidian_bot](https://t.me/book_in_obsidian_bot).**
+> Found a bug, missing a feature, something awkward on the phone — send it an
+> ordinary message. No GitHub account, no form. Every message is read, and the
+> next versions are built from them.
+
 ![Library](docs/screenshot-library.png)
 ![Reading](docs/screenshot-reading.png)
 
@@ -37,11 +42,7 @@ Add books by dragging them in.
 
 ## Install
 
-### From the community plugins list
-
-Settings → Community plugins → Browse → search for **Book Reader** → Install.
-
-Until the listing goes live, use BRAT below.
+The listing is under review; until it goes live, install with BRAT or by hand.
 
 ### With BRAT
 
@@ -175,7 +176,7 @@ byte for byte.
 
 MIT — see [LICENSE](LICENSE).
 
-Built by **Elton Labs** · [t.me/eltonlabs](https://t.me/eltonlabs)
+Built by **Elton** · [t.me/eltonlabs](https://t.me/eltonlabs) · feedback: [@book_in_obsidian_bot](https://t.me/book_in_obsidian_bot)
 
 ---
 ---
@@ -187,6 +188,11 @@ Built by **Elton Labs** · [t.me/eltonlabs](https://t.me/eltonlabs)
 вашим хранилищем.
 
 Работает и на компьютере, и на телефоне (Android / iOS).
+
+> **Все пожелания собираются в телеграм-боте [@book_in_obsidian_bot](https://t.me/book_in_obsidian_bot).**
+> Нашли ошибку, не хватает возможности, неудобно на телефоне — просто отправьте
+> боту обычное сообщение. Ни аккаунта на GitHub, ни формы не нужно. Я читаю всё,
+> и следующие версии складываются именно из этих сообщений.
 
 ---
 
@@ -215,11 +221,7 @@ Google Drive, Remotely Save…). Позиция привязана к номер
 
 ## Установка
 
-### Из каталога плагинов
-
-Настройки → Сторонние плагины → Обзор → найти **Book Reader** → Установить.
-
-Пока запись в каталоге не опубликована, ставьте через BRAT — ниже.
+Заявка в каталог на рассмотрении; пока ставьте через BRAT или вручную.
 
 ### Через BRAT
 
@@ -351,4 +353,4 @@ localForage. `npm run build` на чистой копии повторяет о�
 
 MIT — см. [LICENSE](LICENSE).
 
-Сделано **Elton Labs** · [t.me/eltonlabs](https://t.me/eltonlabs)
+Сделано **Elton** · [t.me/eltonlabs](https://t.me/eltonlabs) · пожелания: [@book_in_obsidian_bot](https://t.me/book_in_obsidian_bot)

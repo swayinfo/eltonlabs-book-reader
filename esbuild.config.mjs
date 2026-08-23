@@ -18,7 +18,11 @@ const prod = process.argv[2] === "production";
 // styles.css from a release, so a separate worker file would simply never reach
 // BRAT users. At runtime setupWorker() turns this string into a Blob URL.
 function loadPatchedWorker() {
+  // pdf.js 4+ поставляет воркер как ES-модуль (.mjs). Берём legacy-сборку: она
+  // рассчитана на движки постарше, а Obsidian на телефоне бывает именно таким.
   const candidates = [
+    path.join("node_modules", "pdfjs-dist", "legacy", "build", "pdf.worker.mjs"),
+    path.join("node_modules", "pdfjs-dist", "build", "pdf.worker.mjs"),
     path.join("node_modules", "pdfjs-dist", "build", "pdf.worker.js"),
     path.join("node_modules", "pdfjs-dist", "legacy", "build", "pdf.worker.js"),
   ];
@@ -29,12 +33,13 @@ function loadPatchedWorker() {
   let code = fs.readFileSync(wp, "utf8");
   // Same sentence-period fix as patch-pdfjs.cjs, applied in memory so the embedded
   // worker is always patched regardless of whether patch-pdfjs.cjs ran. Idempotent.
-  const OLD = '"^(\\\\s)|(\\\\p{Mn})|(\\\\p{Cf})$"';   // literal in file: "^(\\s)|(\\p{Mn})|(\\p{Cf})$"
-  const NEW = '"^(\\\\s+)$|(\\\\p{Mn})|(\\\\p{Cf})$"'; // literal in file: "^(\\s+)$|(\\p{Mn})|(\\p{Cf})$"
+const OLD = "/^(\\s)|(\\p{Mn})|(\\p{Cf})$/u";   // в файле: /^(\s)|(\p{Mn})|(\p{Cf})$/u
+  const NEW = "/^(\\s+)$|(\\p{Mn})|(\\p{Cf})$/u"; // в файле: /^(\s+)$|(\p{Mn})|(\p{Cf})$/u
   if (!code.includes(NEW) && code.includes(OLD)) {
     code = code.split(OLD).join(NEW);
     console.log("pdf.worker: sentence-period patch applied (in memory)");
   }
+  code = code.replace(/\nexport \{[^}]*\};\s*$/, "\n");
   return code;
 }
 const workerCode = loadPatchedWorker();
@@ -50,7 +55,7 @@ const workerCode = loadPatchedWorker();
 const neutralise = {
   name: "neutralise-dead-script-injection",
   setup(build) {
-    const targets = /node_modules[\\/](pdfjs-dist|jszip|epubjs)[\\/].*\.js$/;
+    const targets = /node_modules[\\/](pdfjs-dist|jszip|epubjs)[\\/].*\.(js|mjs)$/;
     build.onLoad({ filter: targets }, async (args) => {
       let code = await fs.promises.readFile(args.path, "utf8");
       // ветка-полифил в jszip: заставляем выбрать MessageChannel
