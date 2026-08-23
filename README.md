@@ -39,11 +39,9 @@ Add books by dragging them in.
 
 ### From the community plugins list
 
-<!-- Enable this section once the plugin has been accepted into the directory. -->
-<!-- Settings → Community plugins → Browse → search for "Book Reader" → Install. -->
+Settings → Community plugins → Browse → search for **Book Reader** → Install.
 
-*Not in the community directory yet — the submission is in review. Use BRAT
-below in the meantime.*
+Until the listing goes live, use BRAT below.
 
 ### With BRAT
 
@@ -219,10 +217,9 @@ Google Drive, Remotely Save…). Позиция привязана к номер
 
 ### Из каталога плагинов
 
-<!-- Включить этот раздел, когда плагин примут в каталог. -->
-<!-- Настройки → Сторонние плагины → Обзор → найти «Book Reader» → Установить. -->
+Настройки → Сторонние плагины → Обзор → найти **Book Reader** → Установить.
 
-*В каталоге пока нет — заявка на рассмотрении. Пока ставьте через BRAT.*
+Пока запись в каталоге не опубликована, ставьте через BRAT — ниже.
 
 ### Через BRAT
 

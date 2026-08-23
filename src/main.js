@@ -3739,7 +3739,13 @@ async function extractPdf(file, app, settings = {}, onProgress) {
   await setupWorker(app);
   const alsoFigOnText = settings.pdfShowFiguresOnTextPages === true;
   const buf = await app.vault.readBinary(file);
-  const doc = await pdfjsLib.getDocument({ data: buf }).promise;
+  const doc = await pdfjsLib.getDocument({
+      data: buf,
+      // Книга — чужой файл. У pdf.js есть известная дыра, где специально
+      // собранный шрифт выполняет свой код через eval; отключение eval —
+      // штатное лечение от неё (CVE-2024-4367). На вёрстку не влияет.
+      isEvalSupported: false,
+    }).promise;
   const total = doc.numPages;
   const parts = [];
   const figRects = {};
@@ -8283,7 +8289,13 @@ const LibraryModal = class extends Modal {
   async makePdfThumb(file) {
     await setupWorker(this.app);
     const buf = await this.app.vault.readBinary(file);
-    const doc = await pdfjsLib.getDocument({ data: buf }).promise;
+    const doc = await pdfjsLib.getDocument({
+      data: buf,
+      // Книга — чужой файл. У pdf.js есть известная дыра, где специально
+      // собранный шрифт выполняет свой код через eval; отключение eval —
+      // штатное лечение от неё (CVE-2024-4367). На вёрстку не влияет.
+      isEvalSupported: false,
+    }).promise;
     const page = await doc.getPage(1);
     // Render crisp (~520px wide), flattened onto white, capped so the cached
     // data-URL stays small. Old version used scale 0.5 \u2192 blurry thumbnails.

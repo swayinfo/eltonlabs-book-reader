@@ -21,7 +21,6 @@
   "author": "Elton Labs",
   "license": "MIT",
   "devDependencies": {
-    "builtin-modules": "^3.3.0",
     "esbuild": "0.28.1",
     "eslint": "^9.39.5",
     "eslint-plugin-obsidianmd": "^0.4.1",

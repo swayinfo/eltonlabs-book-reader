@@ -827,7 +827,7 @@ body:not(.is-mobile) .er-bot {
 .er-rs-title { font-size: 19px; font-weight: 600; margin: 0 0 12px; }
 .er-rs-preview {
   border: 1px solid var(--background-modifier-border); border-radius: 12px;
-  padding: 14px 16px; margin-bottom: 18px; overflow: hidden;
+  padding: 14px 16px; margin-bottom: 18px;
   /* Образец: строка всегда внутри рамки. Высота считается от СВОЕГО кегля
      (его ставит _paintPreview), текст центрируется — тогда он не упирается ни
      в верх, ни в низ при любом размере шрифта и межстрочном. */
@@ -1418,9 +1418,9 @@ body:not(.is-mobile) .er-bot {
   max-width: 100%;
   min-width: 0;
   --modal-background: var(--background-primary);
-  background: var(--background-primary) !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
+  background: var(--background-primary);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 .er-ai-modal .modal-content {
   display: flex;
