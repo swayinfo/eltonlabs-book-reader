@@ -290,6 +290,39 @@ Object.assign(__erEN, {
   "планшет": "tablet",
   "телефон": "phone",
 });
+// 3.1.0
+Object.assign(__erEN, {
+  "Подпись этой ссылки": "Wording of that link",
+  "Текст, которым ссылка подписана в заметке. Пусто — стандартная подпись «{0}».":
+    "The text the link is labelled with in the note. Empty means the standard «{0}».",
+  "В заметку книги": "Into the book's note",
+  "Дописать цитату в «{0}» вместо отдельной заметки":
+    "Append the quote to «{0}» instead of making a separate note",
+  "Отступ сверху на телефоне": "Top inset on mobile",
+  "Обычно система сама сообщает высоту «шторки» с часами, и верхняя панель встаёт под ней. На части Android-оболочек (например, Samsung One UI) она этого не делает — панель заезжает под часы. Тогда впишите здесь высоту в пикселях, обычно 24–48. Ноль — доверять системе. Откройте книгу заново, чтобы применить.":
+    "Normally the system reports the height of the status bar and the reader's top bar starts below it. Some Android skins (Samsung One UI, for one) do not, and the bar slides under the clock. Then type the height here in pixels, usually 24-48. Zero means trust the system. Reopen the book to apply.",
+  "Сохранять «Что нового» заметкой": "Keep «What's new» as a note",
+  "После обновления плагина в хранилище появляется заметка со списком изменений — рядом с остальными заметками читалки. Окно «Что нового» показывается один раз, а заметка остаётся.":
+    "After the plugin updates, a note listing the changes appears in your vault, next to the reader's other notes. The «What's new» window shows once; the note stays.",
+  "Book Reader {0} — что нового": "Book Reader {0} - what's new",
+  "Книжная читалка обновилась до версии {0}. Что изменилось:":
+    "Book Reader has been updated to {0}. Here is what changed:",
+  "Список сохранён заметкой «{0}» — открыть": "Saved as the note «{0}» - open it",
+  "Плагин снова открывается там, где раньше писал «Не удалось загрузить»: на Obsidian постарше, на планшетах Huawei и на части Windows-сборок":
+    "The plugin loads again where it used to say «Failed to load»: older Obsidian builds, Huawei tablets and some Windows installs",
+  "Цитаты можно складывать в одну заметку книги: в окне названия появилась кнопка «В заметку книги», а в меню выделения — «Текстом в заметку книги»":
+    "Quotes can pile up in one book note: the title dialog now has an «Into the book's note» button, and the selection menu has «As text into the book's note»",
+  "Подпись ссылки «↪ к месту в книге» теперь своя — задаётся в настройках":
+    "The wording of the «↪ to this spot in the book» link is yours now - set it in the settings",
+  "Клик по выделению в списке ведёт к месту в книге даже там, где страница ещё не отрисована":
+    "Tapping a highlight in the list takes you to its place in the book even when that page has not been drawn yet",
+  "Панель выделения больше не убегает на пустое место в начале абзаца и на границе страниц":
+    "The selection bar no longer jumps to empty space at the start of a paragraph or across a page break",
+  "Верхняя панель на Android больше не заезжает под часы; если оболочка телефона молчит о высоте шторки, отступ можно задать руками":
+    "On Android the top bar no longer slides under the clock; if the phone's skin keeps the status-bar height to itself, the inset can be set by hand",
+  "Что нового теперь сохраняется заметкой в хранилище — не нужно запоминать окно":
+    "What's new is saved as a note in your vault, so there is nothing to memorise from a window",
+});
 // Module-scope, not a global. It was on globalThis/window, which the popout
 // guidance rightly flags — but the honest fix is that a module's own setting
 // has no business on the window object at all. One value, one place.
@@ -423,6 +456,8 @@ const DEFAULT = {
   // Content-first "immersive" chrome: the top/bottom bars gently dim after a few
   // seconds of no pointer movement, and brighten the instant you move again.
   immersive: true,
+  // Ручной отступ сверху на телефоне, px. 0 — высоту статус-бара берём у системы.
+  mobileTopInset: 0,
   // Set to true once the first-run welcome slideshow has been shown, so it never
   // pops up again on its own (can still be re-opened from Settings).
   onboarded: false,
@@ -472,6 +507,8 @@ const DEFAULT = {
   // How a copied quote is shaped. Placeholders: {text} {book} {page} {link} {comment}
   quoteTemplate: "",
   quoteBacklinks: true,
+  // Подпись этой ссылки. Пусто — берётся стандартная на языке интерфейса.
+  quoteBacklinkLabel: "",
   noteOpenMode: "split",
   // Widest a single reading column may get, in characters. A full-width column
   // on a wide monitor runs to 150+ characters, and the eye loses the start of
@@ -488,7 +525,9 @@ const DEFAULT = {
   // Plugin version the reader last saw the "what's new" screen for. Drives the
   // post-update summary; empty on an existing install means "never tracked", and
   // the full history is shown once so the jump isn't silent.
-  lastSeenVersion: ""
+  lastSeenVersion: "",
+  // После обновления список изменений сохраняется заметкой в хранилище.
+  whatsNewNote: true
 };
 const THEMES = {
   // Цвета самого Obsidian, а не свои: книга и библиотека выглядят как
@@ -1478,7 +1517,10 @@ const EltonReader = class extends Plugin {
         this._wnShown = true;
         this.settings.lastSeenVersion = cur;
         await this.saveAll();
-        new WhatsNewModal(this.app, this, news).open();
+        const noteFile = this.settings.whatsNewNote === false
+          ? null
+          : await writeWhatsNewNote(this.app, this, news);
+        new WhatsNewModal(this.app, this, news, noteFile).open();
       });
     }
   }
@@ -3170,7 +3212,7 @@ async function createNoteFromPdfPage(view, pageNo, btn) {
     // A scanned page has no paragraph to anchor to, so the backlink points at
     // the page — still one click from the note back to where it came from.
     const back = plugin.settings.quoteBacklinks !== false
-      ? ` [${__ertr("↪ к месту в книге")}](obsidian://elton-reader?book=${encodeURIComponent(file.path)}&page=${pageNo})`
+      ? ` [${backlinkLabel(plugin)}](obsidian://elton-reader?book=${encodeURIComponent(file.path)}&page=${pageNo})`
       : "";
     const body = `${quote}\n\n${__ertr("— из [[{0}]], стр. {1}", linkName, pageNo)}${back}\n`;
     await resolveNotesFolder(app, folderOverride);
@@ -3247,6 +3289,33 @@ function addAiBtn(view, pop) {
 // Shared popup code must not have to know which one it is holding: calling the
 // name the other view uses threw, and a comment written on the phone was saved
 // and then vanished without a word.
+// Куда ставить панель у выделения.
+//
+// getBoundingClientRect() у выделения врёт в двух местах, и обоих людей это
+// поймало. Первое — начало абзаца: браузер добавляет к выделению пустой
+// прямоугольник в конце предыдущей строки, и рамка выделения оказывается шире
+// самого текста. Второе — граница страницы: текст разложен по колонкам, и
+// выделение, задевшее соседнюю колонку, даёт рамку во всю ширину разворота —
+// панель уезжает на пустое место или за экран. Поэтому берутся отдельные
+// прямоугольники строк, пустые выбрасываются, оставшиеся ограничиваются
+// видимой страницей — и рамка собирается уже из них.
+function erSelectionRect(range, areaEl) {
+  let rects = [];
+  try {
+    rects = [...range.getClientRects()].filter((r) => r.width > 0.5 && r.height > 0.5);
+  } catch { /* optional step; a failure here must not interrupt reading */ }
+  if (!rects.length) return range.getBoundingClientRect();
+  const box = areaEl ? areaEl.getBoundingClientRect() : null;
+  if (box) {
+    const seen = rects.filter((r) => r.right > box.left + 1 && r.left < box.right - 1);
+    if (seen.length) rects = seen;
+  }
+  const left = Math.min(...rects.map((r) => r.left));
+  const right = Math.max(...rects.map((r) => r.right));
+  const top = Math.min(...rects.map((r) => r.top));
+  const bottom = Math.max(...rects.map((r) => r.bottom));
+  return { left, right, top, bottom, width: right - left, height: bottom - top, x: left, y: top };
+}
 function erRefreshHlPanel(view) {
   const fn = view.buildHlPanel || view._buildHlPanel;
   if (typeof fn === "function") fn.call(view);
@@ -3294,7 +3363,7 @@ function addBarButtons(view, pop) {
     view._hideHlPopup();
     selOf(view.areaEl)?.removeAllRanges();
     if (!cur) return;
-    createNoteFromSelection(view.app, view.plugin, cur.text, view.file, { extra: hlCommentMd(cur), color: cur.color });
+    createNoteFromSelection(view.app, view.plugin, cur.text, view.file, { extra: hlCommentMd(cur), color: cur.color, hl: cur });
   });
   addAiBtn(view, pop);
 }
@@ -3318,8 +3387,16 @@ function addMoreBtn(view, pop) {
       new Notice(ok ? __ertr("Скопировано ✓") : __ertr("Не удалось скопировать"));
     }));
     menu.addItem((it) => it.setTitle(__ertr("Создать заметку")).setIcon("file-plus").onClick(() => {
-      createNoteFromSelection(view.app, view.plugin, cur.text, view.file, { extra: hlCommentMd(cur), color: cur.color });
+      createNoteFromSelection(view.app, view.plugin, cur.text, view.file, { extra: hlCommentMd(cur), color: cur.color, hl: cur });
     }));
+    // Второй адрес для того же текста: не отдельный файл, а общая заметка книги,
+    // куда цитаты складываются одна под другой. Пункт появляется, только если
+    // заметка книге привязана — иначе дописывать некуда.
+    if (bookNoteLinkFor(view.plugin, view.file)) {
+      menu.addItem((it) => it.setTitle(__ertr("Текстом в заметку книги")).setIcon("text-quote").onClick(() => {
+        sendQuoteToBookNote(view, cur);
+      }));
+    }
     if (view.plugin.settings.aiEnabled) {
       menu.addItem((it) => it.setTitle(__ertr("Разобрать фрагмент")).setIcon("sparkles").onClick(() => {
         new AiExplainModal(view.app, view.plugin, cur.text, view.file).open();
@@ -5381,10 +5458,11 @@ function allVaultTags(app) {
   }
 }
 const NoteTitleModal = class extends Modal {
-  constructor(app, plugin, fragment, onDone) {
+  constructor(app, plugin, fragment, bookFile, onDone) {
     super(app);
     this.plugin = plugin;
     this.fragment = fragment;
+    this.bookFile = bookFile || null;
     this.onDone = onDone;
     this._answered = false;
   }
@@ -5429,6 +5507,20 @@ const NoteTitleModal = class extends Modal {
     const foot = c.createDiv("er-setup-foot");
     const ok = foot.createEl("button", { text: __ertr("Создать заметку") });
     ok.addClass("er-setup-btn", "er-setup-btn-primary");
+    // Второй выход из этой же модалки. Люди ждут, что вторая и третья цитата
+    // лягут в ту же заметку книги, а не расплодят файлы: кнопка даёт это
+    // выбрать прямо здесь, не выключая обычные отдельные заметки в настройках.
+    const bookNote = this.bookFile ? bookNoteLinkFor(this.plugin, this.bookFile) : "";
+    if (bookNote) {
+      const toBook = foot.createEl("button", { text: __ertr("В заметку книги") });
+      toBook.addClass("er-setup-btn", "er-setup-btn-quiet");
+      toBook.setAttribute("aria-label", __ertr("Дописать цитату в «{0}» вместо отдельной заметки", bookNote));
+      toBook.addEventListener("click", () => {
+        this._answered = true;
+        this.close();
+        this.onDone({ toBookNote: true });
+      });
+    }
     const cancel = foot.createEl("button", { text: __ertr("Отмена") });
     cancel.addClass("er-setup-btn", "er-setup-btn-quiet");
     const submit = async () => {
@@ -5533,9 +5625,14 @@ async function createNoteFromSelection(app, plugin, selText, bookFile, opts = {}
   let chosenFolder = null, chosenTags = [];
   if (!silent && plugin.settings.askNoteTitle !== false) {
     const chosen = await new Promise((resolve) => {
-      new NoteTitleModal(app, plugin, clean, resolve).open();
+      new NoteTitleModal(app, plugin, clean, bookFile, resolve).open();
     });
     if (chosen === null) return null;
+    if (chosen.toBookNote) {
+      const base = opts.hl && typeof opts.hl === "object" ? opts.hl : {};
+      await exportHighlightsToBookNote(app, plugin, bookFile, [{ ...base, text: clean, color: color != null ? color : base.color }]);
+      return null;
+    }
     title = sanitizeNoteTitle(chosen.title);
     chosenFolder = chosen.folder || null;
     chosenTags = chosen.tags || [];
@@ -5680,6 +5777,11 @@ function deleteBookFromVault(app, plugin, file, after) {
   }).open();
 }
 const QUOTE_TEMPLATE_DEFAULT = "> {text}\n\n— из [[{book}]]{page}{link}";
+// Подпись ссылки «обратно в книгу». Своя — из настроек, иначе стандартная.
+function backlinkLabel(plugin) {
+  const own = String(plugin && plugin.settings && plugin.settings.quoteBacklinkLabel || "").trim();
+  return own || __ertr("↪ к месту в книге");
+}
 function quoteMarkdown(plugin, hl, bookFile) {
   const clean = String(hl && hl.text || "").replace(/[ \t]+/g, " ").replace(/\s*\n\s*/g, " ").trim();
   if (!clean) return "";
@@ -5687,7 +5789,7 @@ function quoteMarkdown(plugin, hl, bookFile) {
   const page = hl && hl.page ? __ertr(", стр. {0}", hl.page) : "";
   let link = "";
   if (plugin.settings.quoteBacklinks !== false && bookFile && typeof hl.block === "number" && hl.block >= 0) {
-    link = ` [${__ertr("↪ к месту в книге")}](obsidian://elton-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block})`;
+    link = ` [${backlinkLabel(plugin)}](obsidian://elton-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block})`;
   }
   const comment = hl && hl.comment ? `
 >
@@ -5828,7 +5930,7 @@ async function exportHighlightsToBookNote(app, plugin, bookFile, highlights) {
     let where = hl.page ? __ertr(" *(стр. {0})*", hl.page) : "";
     if (plugin.settings.quoteBacklinks !== false && bookFile && typeof hl.block === "number" && hl.block >= 0) {
       const uri = `obsidian://elton-reader?book=${encodeURIComponent(bookFile.path)}&block=${hl.block}`;
-      where += ` [${__ertr("↪ к месту в книге")}](${uri})`;
+      where += ` [${backlinkLabel(plugin)}](${uri})`;
     }
     const cmt = hl.comment ? `
 >
@@ -6293,6 +6395,15 @@ function bookNoteAction(settings, bookPath) {
   return asked[bookPath] ? "prompted" : "ask";
 }
 const WHATS_NEW = [
+  { v: "3.1.0", items: [
+    __ertr("Плагин снова открывается там, где раньше писал «Не удалось загрузить»: на Obsidian постарше, на планшетах Huawei и на части Windows-сборок"),
+    __ertr("Цитаты можно складывать в одну заметку книги: в окне названия появилась кнопка «В заметку книги», а в меню выделения — «Текстом в заметку книги»"),
+    __ertr("Подпись ссылки «↪ к месту в книге» теперь своя — задаётся в настройках"),
+    __ertr("Клик по выделению в списке ведёт к месту в книге даже там, где страница ещё не отрисована"),
+    __ertr("Панель выделения больше не убегает на пустое место в начале абзаца и на границе страниц"),
+    __ertr("Верхняя панель на Android больше не заезжает под часы; если оболочка телефона молчит о высоте шторки, отступ можно задать руками"),
+    __ertr("Что нового теперь сохраняется заметкой в хранилище — не нужно запоминать окно")
+  ] },
   { v: "3.0.2", items: [
     __ertr("Пожелания и ошибки теперь собираются в телеграм-боте @book_in_obsidian_bot — просто напишите ему сообщение"),
     __ertr("Разбор фрагмента стал диалогом: свой вопрос, свой системный промпт, название книги уходит фоном"),
@@ -6351,11 +6462,39 @@ function cmpVer(a, b) {
 function whatsNewSince(lastSeen, current, log) {
   return (log || WHATS_NEW).filter((r) => cmpVer(r.v, lastSeen) > 0 && cmpVer(r.v, current) <= 0);
 }
+// Список изменений остаётся в хранилище заметкой.
+//
+// Окно «Что нового» показывается один раз и закрывается — а вопросы «что вообще
+// поменялось в этом обновлении» приходят через неделю. Заметка лежит там же, где
+// остальные заметки читалки, ищется поиском и переживает любое окно. Уже
+// существующую не трогаем: человек мог её дописать.
+async function writeWhatsNewNote(app, plugin, releases) {
+  try {
+    if (!releases || !releases.length) return null;
+    const title = sanitizeNoteTitle(__ertr("Book Reader {0} — что нового", plugin.manifest.version));
+    const path = inboxNotePath(app, title, null);
+    const exist = app.vault.getAbstractFileByPath(path);
+    if (exist instanceof TFile) return exist;
+    const body = releases.map((r) => `## ${r.v}
+
+${r.items.map((i) => `- ${i}`).join("\n")}`).join("\n\n");
+    await resolveNotesFolder(app, null);
+    const f = await app.vault.create(path, `${__ertr("Книжная читалка обновилась до версии {0}. Что изменилось:", plugin.manifest.version)}
+
+${body}
+`);
+    return f instanceof TFile ? f : null;
+  } catch (e) {
+    console.warn("Book Reader: could not write the what's-new note", e);
+    return null;
+  }
+}
 const WhatsNewModal = class extends Modal {
-  constructor(app, plugin, releases) {
+  constructor(app, plugin, releases, noteFile) {
     super(app);
     this.plugin = plugin;
     this.releases = releases;
+    this.noteFile = noteFile || null;
   }
   onOpen() {
     const c = this.contentEl;
@@ -6380,6 +6519,14 @@ const WhatsNewModal = class extends Modal {
     const ok = nav.createEl("button", { text: __ertr("Понятно") });
     ok.addClass("er-onb-start", "er-wn-ok");
     ok.addEventListener("click", () => this.close());
+    if (this.noteFile) {
+      const open = c.createDiv("er-onb-skip");
+      open.setText(__ertr("Список сохранён заметкой «{0}» — открыть", this.noteFile.basename));
+      open.addEventListener("click", () => {
+        this.close();
+        this.app.workspace.getLeaf(true).openFile(this.noteFile);
+      });
+    }
     const help = c.createDiv("er-onb-skip");
     help.setText(__ertr("Инструкция: разбор всех настроек по шагам"));
     help.addEventListener("click", () => {
@@ -7509,7 +7656,7 @@ const ReaderView = class extends ItemView {
     }
     this._pendingSel = { ...parts[0], parts, text: parts.map((p) => p.text).join(" ") };
     erPaintSelection(this, range);
-    this._showHlPopup(range.getBoundingClientRect());
+    this._showHlPopup(erSelectionRect(range, this.areaEl));
   }
   buildHlPopup() {
     const pop = this.hlPopup;
@@ -7603,8 +7750,27 @@ const ReaderView = class extends ItemView {
   goToHighlight(id) {
     const flow = this.pager.flow;
     const span = flow == null ? void 0 : flow.querySelector(`[data-hl-id="${id}"]`);
+    // Нарисованного выделения может не быть: в PDF страницы подставляются по
+    // мере чтения, и краска ложится только на те, что уже показаны. Раньше в
+    // этом случае клик по строке в списке отвечал «Выделение не найдено» и
+    // никуда не вёл. Абзац известен всегда — по нему и прыгаем, как на телефоне.
     if (!span) {
-      new Notice(__ertr("Выделение не найдено"));
+      const hl = this.file ? this.plugin.getHighlights(this.file.path).find((h) => h.id === id) : null;
+      if (!hl || typeof hl.block !== "number") {
+        new Notice(__ertr("Выделение не найдено"));
+        return;
+      }
+      const [c2, t2] = this.pager.jumpTo(this.pager.spreadForBlock(hl.block));
+      this.updateUI(c2, t2);
+      if (this.file) this.plugin.saveProgress(this.file.path, c2, t2, this.pager.currentBlockIndex());
+      this.closePanel();
+      window.requestAnimationFrame(() => {
+        const later = this.pager.flow?.querySelector(`[data-hl-id="${id}"]`);
+        if (later) {
+          later.classList.add("er-hl-flash");
+          window.setTimeout(() => later.classList.remove("er-hl-flash"), 1200);
+        }
+      });
       return;
     }
     const rel = span.getBoundingClientRect().left - flow.getBoundingClientRect().left;
@@ -7644,7 +7810,7 @@ const ReaderView = class extends ItemView {
         if (!this.file) return;
         const menu = new Menu();
         menu.addItem((it) => it.setTitle(__ertr("Создать заметку")).setIcon("file-plus").onClick(() => {
-          createNoteFromSelection(this.app, this.plugin, hl.text, this.file, { extra: hlCommentMd(hl), color: hl.color });
+          createNoteFromSelection(this.app, this.plugin, hl.text, this.file, { extra: hlCommentMd(hl), color: hl.color, hl });
         }));
         menu.addItem((it) => it.setTitle(__ertr("Текстом в заметку книги")).setIcon("text-quote").onClick(() => {
           sendQuoteToBookNote(this, hl);
@@ -8461,6 +8627,11 @@ const ReaderModal = class extends Modal {
     // screen). Only a rule aimed at the container can take that back.
     this.containerEl.addClass("er-fullscreen-container");
     contentEl.addClass("er-fullscreen-content");
+    // Ручная подстройка под статус-бар: на некоторых Android-оболочках система
+    // не сообщает высоту «шторки», и панель читалки уезжает под часы. Ноль —
+    // ничего не меняет, отступ остаётся системным.
+    const extraTop = Number(this.plugin.settings.mobileTopInset) || 0;
+    if (extraTop > 0) contentEl.style.setProperty("--er-extra-top", extraTop + "px");
     // Take Obsidian's own ✕ out of the DOM, rather than styling it away.
     //
     // It floats in the window's top-right corner; our window fills the screen,
@@ -9137,7 +9308,7 @@ const ReaderModal = class extends Modal {
     // along in `parts`, and only the colouring walks them.
     this._pendingSel = { ...parts[0], parts, text: parts.map((p) => p.text).join(" ") };
     erPaintSelection(this, range);
-    this._showHlPopup(range.getBoundingClientRect());
+    this._showHlPopup(erSelectionRect(range, this.areaEl));
   }
   _buildHlPopup() {
     const pop = this.hlPopup;
@@ -9263,7 +9434,7 @@ const ReaderModal = class extends Modal {
         if (!this.file) return;
         const menu = new Menu();
         menu.addItem((it) => it.setTitle(__ertr("Создать заметку")).setIcon("file-plus").onClick(() => {
-          createNoteFromSelection(this.app, this.plugin, hl.text, this.file, { extra: hlCommentMd(hl), color: hl.color });
+          createNoteFromSelection(this.app, this.plugin, hl.text, this.file, { extra: hlCommentMd(hl), color: hl.color, hl });
         }));
         menu.addItem((it) => it.setTitle(__ertr("Текстом в заметку книги")).setIcon("text-quote").onClick(() => {
           sendQuoteToBookNote(this, hl);
@@ -9677,6 +9848,19 @@ const SettingsTab = class extends PluginSettingTab {
       .addToggle((t) => t.setValue(this.plugin.settings.immersive !== false).onChange(async (v) => {
         this.plugin.settings.immersive = v; await this.plugin.saveAll();
       }));
+    if (Platform.isMobile) {
+      new Setting(c)
+        .setName(__ertr("Отступ сверху на телефоне"))
+        .setDesc(__ertr("Обычно система сама сообщает высоту «шторки» с часами, и верхняя панель встаёт под ней. На части Android-оболочек (например, Samsung One UI) она этого не делает — панель заезжает под часы. Тогда впишите здесь высоту в пикселях, обычно 24–48. Ноль — доверять системе. Откройте книгу заново, чтобы применить."))
+        .addText((t) => t
+          .setPlaceholder("0")
+          .setValue(String(this.plugin.settings.mobileTopInset || 0))
+          .onChange(async (v) => {
+            const n = Math.max(0, Math.min(120, Number(String(v).replace(/[^\d]/g, "")) || 0));
+            this.plugin.settings.mobileTopInset = n;
+            await this.plugin.saveAll();
+          }));
+    }
   }
   // ── Заметки ───────────────────────────────────────────────────────────────
   _tabNotes(c) {
@@ -9758,6 +9942,16 @@ const SettingsTab = class extends PluginSettingTab {
         await this.plugin.saveAll();
       }));
     new Setting(c)
+      .setName(__ertr("Подпись этой ссылки"))
+      .setDesc(__ertr("Текст, которым ссылка подписана в заметке. Пусто — стандартная подпись «{0}».", __ertr("↪ к месту в книге")))
+      .addText((t) => t
+        .setPlaceholder(__ertr("↪ к месту в книге"))
+        .setValue(this.plugin.settings.quoteBacklinkLabel || "")
+        .onChange(async (v) => {
+          this.plugin.settings.quoteBacklinkLabel = v;
+          await this.plugin.saveAll();
+        }));
+    new Setting(c)
       .setName(__ertr("Сохранять цвет выделений при экспорте"))
       .setDesc(__ertr("Каждая цитата оборачивается в цветной <mark> — цвет выделения виден в готовой заметке (в режиме чтения и live preview, без плагинов). Выключите, если хотите обычные цитаты без HTML."))
       .addToggle((t) => t.setValue(this.plugin.settings.exportColors !== false).onChange(async (v) => {
@@ -9801,6 +9995,13 @@ const SettingsTab = class extends PluginSettingTab {
       .setDesc(__ertr("Путь к вашему шаблону (Templater), который применяется к новой заметке из выделения. Пусто — заметка создаётся без шаблона, только с цитатой. Пример: 0. Files/4. Templates/Шаблон стандартный.md"))
       .addText((t) => t.setPlaceholder(__ertr("Templates/Шаблон.md")).setValue(this.plugin.settings.noteTemplate || "").onChange(async (v) => {
         this.plugin.settings.noteTemplate = v.trim();
+        await this.plugin.saveAll();
+      }));
+    new Setting(c)
+      .setName(__ertr("Сохранять «Что нового» заметкой"))
+      .setDesc(__ertr("После обновления плагина в хранилище появляется заметка со списком изменений — рядом с остальными заметками читалки. Окно «Что нового» показывается один раз, а заметка остаётся."))
+      .addToggle((t) => t.setValue(this.plugin.settings.whatsNewNote !== false).onChange(async (v) => {
+        this.plugin.settings.whatsNewNote = v;
         await this.plugin.saveAll();
       }));
     c.createEl("div", { cls: "er-set-note", text: __ertr("Совет: шаблон можно переопределить для отдельной книги — откройте книгу, нажмите (i) вверху и укажите свой шаблон в поле «Шаблон для этой книги» (удобно, если у разных жанров разное оформление).") });  }

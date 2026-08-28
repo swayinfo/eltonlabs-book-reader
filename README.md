@@ -95,6 +95,26 @@ analytics and no ads.
 
 ---
 
+## What's new in 3.1
+
+**It loads where it used to refuse to.** On older Obsidian builds, Huawei tablets
+and some Windows installs the plugin failed with "Failed to load plugin" — the
+PDF engine expected a JavaScript feature those browser engines do not have. It is
+supplied now, so those devices get a working reader.
+
+**Quotes can pile up in one book note.** The title dialog has an *Into the book's
+note* button, and the selection menu an *As text into the book's note* item — the
+second and third quote join the first instead of making new files.
+
+**The link back to the book is worded by you.** Set your own label instead of
+"↪ to this spot in the book" in the settings.
+
+**Fixes.** Tapping a highlight in the list now jumps to its place even on pages
+that have not been drawn yet; the selection bar no longer lands on empty space at
+the start of a paragraph or across a page break; on Android the top bar keeps
+clear of the clock, with a manual inset for skins that hide the status-bar
+height. What's new is also saved as a note in your vault.
+
 ## What's new in 3.0
 
 **Ask an AI about a passage.** Select text and press ✨: a translation, a
@@ -284,6 +304,26 @@ Obsidian.
 Аккаунт для самого плагина не нужен. Ни телеметрии, ни аналитики, ни рекламы.
 
 ---
+
+## Что нового в 3.1
+
+**Открывается там, где раньше отказывался.** На старых сборках Obsidian, на
+планшетах Huawei и на части Windows плагин писал «Не удалось загрузить»: движку
+PDF не хватало возможности, которой в этих браузерных движках нет. Теперь она
+поставляется вместе с плагином — и читалка на этих устройствах работает.
+
+**Цитаты складываются в одну заметку книги.** В окне названия появилась кнопка
+«В заметку книги», а в меню выделения — «Текстом в заметку книги»: вторая и
+третья цитата дописываются к первой, а не плодят файлы.
+
+**Подпись ссылки обратно в книгу — своя.** Вместо «↪ к месту в книге» можно
+задать в настройках любое слово.
+
+**Починено.** Клик по выделению в списке ведёт к месту в книге даже на ещё не
+отрисованных страницах; панель выделения не убегает на пустое место в начале
+абзаца и на границе страниц; на Android верхняя панель не заезжает под часы, а
+для оболочек, которые молчат о высоте шторки, отступ задаётся руками. Список
+изменений теперь сохраняется заметкой в хранилище.
 
 ## Что нового в 3.0
 

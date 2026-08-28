@@ -1098,8 +1098,18 @@ body:not(.is-mobile) .er-bot {
   min-height: 0;
   position: relative;
 }
-/* Clear of the clock — the top bar begins where the status bar ends. */
-.er-fullscreen-content { padding-top: var(--safe-area-inset-top, 0px); }
+/* Clear of the clock — the top bar begins where the status bar ends.
+   Две величины вместо одной: Obsidian выставляет свою переменную, но на части
+   Android-оболочек (One UI на Galaxy, например) она приходит нулём, а системный
+   env() — настоящим. Берётся большее из двух, и сверху — ручная подстройка из
+   настроек для устройств, где не сработало ни то, ни другое. */
+.er-fullscreen-content {
+  padding-top: max(
+    var(--safe-area-inset-top, 0px),
+    env(safe-area-inset-top, 0px),
+    var(--er-extra-top, 0px)
+  );
+}
 /* The progress line joins the flow instead of floating.
    Floating, it had to be pushed down by the status bar strip — and landed on the
    top bar's own bottom border, so the reader saw two lines a pixel apart. As the
